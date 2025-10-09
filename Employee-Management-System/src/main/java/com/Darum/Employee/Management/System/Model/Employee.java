@@ -25,10 +25,10 @@ import java.util.List;
         private Long employeeId;
 
     @Column(nullable = false)
-    private String firstName;
+    private String fullName;
 
     @Column(nullable = false)
-    private String lastName;
+    private String password;
 
     @Column(unique = true, nullable = false)
     private String email;

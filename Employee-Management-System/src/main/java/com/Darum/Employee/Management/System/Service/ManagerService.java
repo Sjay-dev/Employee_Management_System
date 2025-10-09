@@ -29,7 +29,6 @@ public interface ManagerService {
     public String generateResetPasswordToken(String email);
     public boolean validateResetPasswordToken(String token);
     public boolean changePassword(Manager manager, String oldPassword, String newPassword);
-    public void updateEmployeePassword(String token, String password);
     public void deleteResetPasswordToken(String token);
     public boolean isTokenExpired(String token);
 

@@ -34,6 +34,10 @@ public class Leave {
     @JoinColumn(name = "employeeId", nullable = false)
     private Employee employee;
 
+    @ManyToOne
+    @JoinColumn(name = "managerId", nullable = false)
+    private Manager manager;
+
     @CreationTimestamp
     private LocalDateTime createdAt;
 
