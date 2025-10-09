@@ -40,7 +40,7 @@ import java.util.List;
     private String department;
     private String position;
     private String employmentType;
-    private BigDecimal salary;
+    private String salary;
 
     @Column(nullable = false)
     private LocalDate dateOfBirth;

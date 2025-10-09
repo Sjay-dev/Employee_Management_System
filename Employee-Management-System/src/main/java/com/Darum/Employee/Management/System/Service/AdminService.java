@@ -12,15 +12,15 @@ public interface AdminService {
     public Admin checkAdmin(String fullName , String password);
 
     public Manager addManager(Manager manager);
-    public List<Manager> viewAllManagers();
-    public String deleteManager();
+    public List<Manager> findAllManagers();
+    public String deleteManager(Long managerId);
 
-    public List<Employee> viewAllEmployees();
-    public String deleteEmployee();
+    public List<Employee> findAllEmployees();
+    public String deleteEmployee(Long employeeId);
 
     public long numberOfManagers();
     public long numberOfEmployees();
 
-    public List<Leave> viewAllLeaves();
+    public List<Leave> findAllLeaves();
 
 }
