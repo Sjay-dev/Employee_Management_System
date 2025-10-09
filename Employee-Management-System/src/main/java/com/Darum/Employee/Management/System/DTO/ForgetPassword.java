@@ -1,8 +1,7 @@
-package com.Darum.Employee.Management.System.Model;
+package com.Darum.Employee.Management.System.DTO;
 
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+
 import lombok.*;
 
 @Getter

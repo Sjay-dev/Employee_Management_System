@@ -8,6 +8,12 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 
+import jakarta.persistence.*;
+import lombok.*;
+import java.time.LocalDateTime;
+
+@Entity
+@Table(name = "reset_tokens")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -21,9 +27,22 @@ public class ResetToken {
 
     @Column(nullable = false, unique = true)
     private String token;
-    @Column(nullable = false, unique = true)
+
+    @Column(nullable = false)
     private String email;
+
 
     private LocalDateTime createdAt;
     private LocalDateTime expiresAt;
+
+    private boolean used = false;
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+        if (expiresAt == null) {
+            expiresAt = createdAt.plusMinutes(15);
+        }
+    }
 }
+
