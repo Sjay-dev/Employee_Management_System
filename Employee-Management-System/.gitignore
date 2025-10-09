@@ -4,7 +4,7 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
-/resources/*.properties
+src/main/resources/application.properties
 
 ### STS ###
 .apt_generated
@@ -21,5 +21,6 @@ target/
 *.iml
 *.ipr
 
+src/main/resources/application.properties
 
 
