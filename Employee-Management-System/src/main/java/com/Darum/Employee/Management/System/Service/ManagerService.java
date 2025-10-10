@@ -1,36 +1,43 @@
 package com.Darum.Employee.Management.System.Service;
 
-import com.Darum.Employee.Management.System.Model.Employee;
-import com.Darum.Employee.Management.System.Model.Manager;
+import com.Darum.Employee.Management.System.Entites.Employee;
+import com.Darum.Employee.Management.System.Entites.Manager;
 
-import java.time.LocalDate;
 import java.util.List;
 
 public interface ManagerService {
 
-    public Manager checkManager(String fullName, String password);
+    //Manager
 
-    public Manager findManagerById(Long managerId);
+    public Manager getManagerById(Long managerId);
 
-    public Manager findManagerByName(String managerFullName);
-    public Manager findManagerByEmail(String managerEmail);
-    public List<Manager> findAllManagers();
+    public List<Manager> getManagerByName(String name);
 
-    public List<Employee> findAllEmployees();
+    public Manager getManagerByEmail(String managerEmail);
 
-    public String updateEmployeeStatus(Long employeeId, String status);
-    public String updateEmployeeDepartment(Long employeeId, String department);
-    public String updateEmployeePosition(Long employeeId, String position);
-    public String updateEmployeeEmploymentType(Long employeeId, String employmentType);
-    public String updateEmployeeSalary(Long employeeId, String salary);
-    public String updateEmployeeHireDate(Long employeeId, LocalDate hireDate);
+    public List<Manager> getAllManagers();
+
+    public Manager updateManager(Long managerId , Manager manager);
+
+    public void deleteManager(Long managerId);
 
 
-    public String generateResetPasswordToken(String email);
-    public boolean validateResetPasswordToken(String token);
-    public boolean changePassword(Manager manager, String oldPassword, String newPassword);
-    public void deleteResetPasswordToken(String token);
-    public boolean isTokenExpired(String token);
+    //Employees
+    public Employee addEmployee(Employee employee);
+
+    public Employee getEmployeeById(Long employeeId);
+
+    public Employee getEmployeeByEmail(String email);
+
+    public List<Employee> getAllEmployees();
+
+    public List<Employee> getAllEmployeesByName(String name);
+
+    public Employee updateEmployee(Long employeeId , Employee employee);
+
+    public void deleteEmployee(Long employeeId);
+
+
 
 
 }

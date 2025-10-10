@@ -1,8 +1,8 @@
 package com.Darum.Employee.Management.System.Service.Impl;
 
-import com.Darum.Employee.Management.System.Model.Employee;
-import com.Darum.Employee.Management.System.Model.Leave;
-import com.Darum.Employee.Management.System.Model.Manager;
+import com.Darum.Employee.Management.System.Entites.Employee;
+import com.Darum.Employee.Management.System.Entites.Leave;
+import com.Darum.Employee.Management.System.Entites.Manager;
 import com.Darum.Employee.Management.System.Repository.EmployeeRepository;
 import com.Darum.Employee.Management.System.Repository.LeaveRepository;
 import com.Darum.Employee.Management.System.Repository.ManagerRepository;

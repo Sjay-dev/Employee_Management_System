@@ -1,4 +1,4 @@
-package com.Darum.Employee.Management.System.Model;
+package com.Darum.Employee.Management.System.Entites;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.GeneratedValue;
@@ -9,8 +9,6 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 import jakarta.persistence.*;
-import lombok.*;
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "reset_tokens")

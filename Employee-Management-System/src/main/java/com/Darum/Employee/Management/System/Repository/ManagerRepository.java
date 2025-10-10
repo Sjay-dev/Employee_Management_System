@@ -1,21 +1,23 @@
 package com.Darum.Employee.Management.System.Repository;
 
-import com.Darum.Employee.Management.System.Model.Manager;
+import com.Darum.Employee.Management.System.Entites.Manager;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface ManagerRepository extends JpaRepository<Manager,Long> {
 
-    public Manager findManagerByFullNameAndPassword(String fullName, String password);
+        //Manager
+        public Manager getManagerByEmail(String email);
+
+    @Query("SELECT m FROM Manager m WHERE LOWER(m.firstName) LIKE LOWER(CONCAT('%', :name, '%')) " +
+            "OR LOWER(m.lastName) LIKE LOWER(CONCAT('%', :name, '%'))")
+        public List<Manager> getManagerByName(String name);
 
 
-    public Manager findManagerByFullName(String fullName);
-
-    public Manager findManagerByEmail(String email);
-
-    public Optional<Manager> findManagerByEmailOpt(String email);
 
 }

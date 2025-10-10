@@ -1,34 +1,42 @@
-package com.Darum.Employee.Management.System.Model;
-
+package com.Darum.Employee.Management.System.Entites;
 
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 
 @Entity
-@Table(name = "admins")
+@Table(name = "leaves")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Admin {
+public class Leave {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long adminId;
+    private Long leaveId;
 
     @Column(nullable = false)
-    private String fullName;
-
-    @Column(unique = true, nullable = false)
-    private String email;
+    private LocalDate startDate;
 
     @Column(nullable = false)
-    private String password;
+    private LocalDate endDate;
+
+    private String reason;
+    private String status;
+
+    @ManyToOne
+    @JoinColumn(name = "employeeId", nullable = false)
+    private Employee employee;
+
+    @ManyToOne
+    @JoinColumn(name = "managerId", nullable = false)
+    private Manager manager;
 
     @CreationTimestamp
     private LocalDateTime createdAt;

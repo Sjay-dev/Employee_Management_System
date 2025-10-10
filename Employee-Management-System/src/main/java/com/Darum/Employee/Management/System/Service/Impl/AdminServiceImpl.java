@@ -1,129 +1,188 @@
 package com.Darum.Employee.Management.System.Service.Impl;
 
-import com.Darum.Employee.Management.System.Model.*;
+import com.Darum.Employee.Management.System.Entites.*;
 import com.Darum.Employee.Management.System.Repository.*;
 import com.Darum.Employee.Management.System.Service.AdminService;
-import com.Darum.Employee.Management.System.Service.EmailService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.parameters.P;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.stereotype.Service;
+import jakarta.transaction.Transactional;
 
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 import java.util.List;
-import java.util.Optional;
+
+
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class AdminServiceImpl implements AdminService {
 
-    @Value("${manager.default.password}")
-    private String defaultPassword;
-    private final BCryptPasswordEncoder passwordEncoder;  // Injected
+    private final AdminRepository adminRepository;
+    private final ManagerRepository managerRepository;
+    private final EmployeeRepository employeeRepository;
 
-
-    @Autowired
-    private AdminRepository adminRepository;
-
-    @Autowired
-    private ManagerRepository managerRepository;
-
-    @Autowired
-    private EmployeeRepository employeeRepository;
-
-    @Autowired
-    private EmailRepository emailRepository;
-    @Autowired
-    private EmailService emailService;
-
-    @Autowired
-    private LeaveRepository  leaveRepository;
+    // ------------------ Admin CRUD ------------------
 
 
     @Override
-    public Admin checkAdmin(String fullName, String password) {
-        return adminRepository.findByFullNameAndPassword(fullName, password);
+    public Admin addAdmin(Admin admin) {
+        return adminRepository.save(admin);
     }
+
+    @Override
+    public Admin getAdminById(Long adminId) {
+        return adminRepository.findById(adminId).orElseThrow(() -> new RuntimeException("Admin not found"));
+    }
+
+    @Override
+    public Admin getAdminByEmail(String email) {
+        return adminRepository.findAdminByEmail(email);
+    }
+
+    @Override
+    public List<Admin> getAdminByName(String name) {
+        return adminRepository.getAdminByName(name);
+    }
+
+    @Override
+    public List<Admin> getAllAdmins() {
+        return adminRepository.findAll();
+    }
+
+    @Override
+    public Admin updateAdmin(Long adminId, Admin admin) {
+        Admin existingAdmin = adminRepository.findById(adminId)
+                .orElseThrow(() -> new RuntimeException("Admin not found"));
+
+        existingAdmin.setFirstName(admin.getFirstName());
+        existingAdmin.setLastName(admin.getLastName());
+        existingAdmin.setEmail(admin.getEmail());
+        existingAdmin.setPassword(admin.getPassword());
+        existingAdmin.setRole(admin.getRole());
+
+        return adminRepository.save(existingAdmin);
+    }
+
+    @Override
+    public void deleteAdmin(Long adminId) {
+        if (!adminRepository.existsById(adminId)) {
+            throw new RuntimeException("Admin not found");
+        }
+        adminRepository.deleteById(adminId);
+    }
+
+    // ------------------ Manager CRUD ------------------
 
     @Override
     public Manager addManager(Manager manager) {
-
-        manager.setPassword(passwordEncoder.encode(defaultPassword));
-        Manager savedManager = managerRepository.save(manager);
-
-        Email email = new Email();
-        String subject = "Welcome to Darum's Employee Management System";
-        String message = "Hi " + manager.getFullName()
-                + "\n\nYou have been added to the Darum's Employee Management System Sucessfully."
-                + "Here are your details below:"
-                + "\nYour Manager Id: " + manager.getManagerId()
-                + "\nYour Full Name: " + manager.getFullName()
-                + "\nYour Password: " + manager.getPassword();
-
-
-            email.setRecipient(manager.getEmail());
-            email.setSubject(subject);
-            email.setBody(message);
-
-            emailRepository.save(email);
-            emailService.sendEmail(manager.getEmail(), subject, message);
-
-            return savedManager;
-
+        return managerRepository.save(manager);
     }
 
     @Override
-    public List<Manager> findAllManagers() {
+    public Manager getManagerById(Long managerId) {
+        return managerRepository.findById(managerId)
+                .orElseThrow(() -> new RuntimeException("Manager not found"));
+    }
+
+    @Override
+    public Manager getManagerByEmail(String email) {
+        return managerRepository.getManagerByEmail(email);
+    }
+
+    @Override
+    public List<Manager> getAllManagers() {
         return managerRepository.findAll();
     }
 
     @Override
-    public String deleteManager(Long managerId) {
-
-        Optional<Manager> manager = managerRepository.findById((managerId));
-
-        if(manager.isPresent()){
-            managerRepository.deleteById(managerId);
-            return "Manager Deleted";
-        }
-        else {
-            return "Manager Not Found";
-        }
+    public List<Manager> getAllManagersByName(String name) {
+        return managerRepository.getManagerByName(name);
     }
 
     @Override
-    public List<Employee> findAllEmployees() {
+    public Manager updateManager(Long managerId, Manager manager) {
+        Manager existingManager = managerRepository.findById(managerId)
+                .orElseThrow(() -> new RuntimeException("Manager not found"));
+
+        existingManager.setFirstName(manager.getFirstName());
+        existingManager.setLastName(manager.getLastName());
+        existingManager.setEmail(manager.getEmail());
+        existingManager.setDepartment(manager.getDepartment());
+        existingManager.setPassword(manager.getPassword());
+        existingManager.setPhoneNumber(manager.getPhoneNumber());
+        existingManager.setRole(manager.getRole());
+        existingManager.setDepartment(manager.getDepartment());
+        existingManager.setPosition(existingManager.getPosition());
+
+        return managerRepository.save(existingManager);
+    }
+
+    @Override
+    public void deleteManager(Long managerId) {
+        if (!managerRepository.existsById(managerId)) {
+            throw new RuntimeException("Manager not found");
+        }
+        managerRepository.deleteById(managerId);
+    }
+
+    // ------------------ Employee CRUD ------------------
+
+    @Override
+    public Employee addEmployee(Employee employee) {
+        return employeeRepository.save(employee);
+    }
+
+    @Override
+    public Employee getEmployeeById(Long employeeId) {
+        return employeeRepository.findById(employeeId)
+                .orElseThrow(() -> new RuntimeException("Employee not found"));
+    }
+
+    @Override
+    public Employee getEmployeeByEmail(String email) {
+        return employeeRepository.getEmployeeByEmail(email);
+    }
+
+    @Override
+    public List<Employee> getAllEmployees() {
         return employeeRepository.findAll();
     }
 
     @Override
-    public String deleteEmployee(Long employeeId) {
+    public List<Employee> getAllEmployeesByName(String name) {
+        return employeeRepository.getEmployeeByName(name);
+    }
 
-        Optional<Employee> employee = employeeRepository.findById(employeeId);
+    @Override
+    public Employee updateEmployee(Long employeeId, Employee employee) {
+        Employee existingEmployee = employeeRepository.findById(employeeId)
+                .orElseThrow(() -> new RuntimeException("Employee not found"));
 
-        if(employee.isPresent()){
-            employeeRepository.deleteById(employeeId);
-            return "Employee Deleted";
+        existingEmployee.setFirstName(employee.getFirstName());
+        existingEmployee.setLastName(employee.getLastName());
+        existingEmployee.setEmail(employee.getEmail());
+        existingEmployee.setPhoneNumber(employee.getPhoneNumber());
+        existingEmployee.setDepartment(employee.getDepartment());
+        existingEmployee.setPhoneNumber(employee.getPhoneNumber());
+        existingEmployee.setPosition(employee.getPosition());
+        existingEmployee.setEmploymentType(employee.getEmploymentType());
+        existingEmployee.setSalary(employee.getSalary());
+        existingEmployee.setDateOfBirth(employee.getDateOfBirth());
+        existingEmployee.setAddress(employee.getAddress());
+        existingEmployee.setRole(employee.getRole());
+        existingEmployee.setHireDate(employee.getHireDate());
+        existingEmployee.setGender(employee.getGender());
+        existingEmployee.setPassword(employee.getPassword());
+
+
+        return employeeRepository.save(existingEmployee);
+    }
+
+    @Override
+    public void deleteEmployee(Long employeeId) {
+        if (!employeeRepository.existsById(employeeId)) {
+            throw new RuntimeException("Employee not found");
         }
-        else{
-            return "Employee Not Found";
-        }
-
-    }
-
-    @Override
-    public long numberOfManagers() {
-        return managerRepository.count();
-    }
-
-    @Override
-    public long numberOfEmployees() {
-        return employeeRepository.count();
-    }
-
-    @Override
-    public List<Leave> findAllLeaves() {
-        return leaveRepository.findAll();
+        employeeRepository.deleteById(employeeId);
     }
 }
+

@@ -1,4 +1,4 @@
-package com.Darum.Employee.Management.System.Model;
+package com.Darum.Employee.Management.System.Entites;
 
 import jakarta.persistence.*;
 import lombok.*;

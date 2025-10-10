@@ -1,6 +1,6 @@
 package com.Darum.Employee.Management.System.Service;
 
-import com.Darum.Employee.Management.System.Model.Email;
+import com.Darum.Employee.Management.System.Entites.Email;
 import com.Darum.Employee.Management.System.Repository.EmailRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.mail.SimpleMailMessage;

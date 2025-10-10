@@ -1,10 +1,11 @@
-package com.Darum.Employee.Management.System.Model;
+package com.Darum.Employee.Management.System.Entites;
 
+import com.Darum.Employee.Management.System.Entites.Enum.Role;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-import java.math.BigDecimal;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -25,7 +26,10 @@ import java.util.List;
         private Long employeeId;
 
     @Column(nullable = false)
-    private String fullName;
+    private String firstName;
+
+    @Column(nullable = false)
+    private String lastName;
 
     @Column(nullable = false)
     private String password;
@@ -36,7 +40,7 @@ import java.util.List;
     @Column(nullable = false)
     private String phoneNumber;
 
-    private String status;
+
     private String department;
     private String position;
     private String employmentType;
@@ -51,6 +55,8 @@ import java.util.List;
     @Column(nullable = false)
     private String gender;
 
+    @Builder.Default
+    private Role role = Role.EMPLOYEE;
 
 
     @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL, orphanRemoval = true)

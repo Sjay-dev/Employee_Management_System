@@ -1,135 +1,148 @@
 package com.Darum.Employee.Management.System.Controller;
 
 
-import com.Darum.Employee.Management.System.Model.Employee;
-import com.Darum.Employee.Management.System.Model.Leave;
-import com.Darum.Employee.Management.System.Model.Manager;
+import com.Darum.Employee.Management.System.Entites.Admin;
+import com.Darum.Employee.Management.System.Entites.Employee;
+import com.Darum.Employee.Management.System.Entites.Leave;
+import com.Darum.Employee.Management.System.Entites.Manager;
 import com.Darum.Employee.Management.System.Service.AdminService;
 import com.Darum.Employee.Management.System.Service.ManagerService;
 import com.Darum.Employee.Management.System.Untils.JWTUtil;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @RestController
-@RequestMapping("/admin")
-@CrossOrigin("*")
+@RequestMapping("/api/admins")
+@RequiredArgsConstructor
 public class AdminController {
 
-    @Autowired
-    private AdminService adminService;
-    @Autowired
-    private ManagerService  managerService;
+    private final AdminService adminService;
 
-    @Autowired
-    private JWTUtil jwtUtil;
+    // ---------------------------
+    // 🧩 Admin Endpoints
+    // ---------------------------
 
-    @PostMapping("/addmanager")
-        public ResponseEntity<String> addManager(@RequestBody Manager manager,
-            @RequestHeader("Authorization") String authHeader){
-        String token = authHeader.substring(7);
-
-            if(!jwtUtil.validateToken(token).get("role").equals("ADMIN")){
-                    return ResponseEntity.status(403).body("Access Denied");
-            }
-
-                adminService.addManager(manager);
-            return ResponseEntity.ok("Manager added successfully\n\n" +
-                    "Manager ID: " + manager.getManagerId());
+    @PostMapping
+    public ResponseEntity<Admin> addAdmin(@RequestBody Admin admin) {
+        System.out.println("Incoming admin: " + admin);
+        Admin savedAdmin = adminService.addAdmin(admin);
+        return ResponseEntity.ok(savedAdmin);
     }
 
-    @GetMapping("/viewAllManagers")
-        public ResponseEntity<List<Manager>> viewAllManagers(@RequestHeader("Authorization") String authHeader){
-        String token = authHeader.substring(7);
-        if(!jwtUtil.validateToken(token).get("role").equals("ADMIN")){
-            return ResponseEntity.status(403).body(null);
-        }
-            return ResponseEntity.ok(adminService.findAllManagers());
+    @GetMapping("/{adminId}")
+    public ResponseEntity<Admin> getAdminById(@PathVariable Long adminId) {
+        return ResponseEntity.ok(adminService.getAdminById(adminId));
     }
 
-    @GetMapping("/viewAllEmployees")
-         public ResponseEntity<List<Employee>> viewAllEmployees(@RequestHeader("Authorization") String authHeader){
-        String token = authHeader.substring(7);
-        if(!jwtUtil.validateToken(token).get("role").equals("ADMIN")){
-            return ResponseEntity.status(403).body(null);
-        }
-        return ResponseEntity.ok(adminService.findAllEmployees());
-
+    @GetMapping("/email/{email}")
+    public ResponseEntity<Admin> getAdminByEmail(@PathVariable String email) {
+        return ResponseEntity.ok(adminService.getAdminByEmail(email));
     }
 
-        @PutMapping("/updateEmployeeStatus")
-            public ResponseEntity<String> updateEmployeeStatus(
-                    @RequestParam Long employeeId , @RequestParam String status,
-                    @RequestHeader("Authorization") String authHeader){
-
-            String token = authHeader.substring(7);
-            if(!jwtUtil.validateToken(token).get("role").equals("ADMIN")){
-                return ResponseEntity.status(403).body("Access Denied");
-            }
-            String message = managerService.updateEmployeeStatus(employeeId, status.toUpperCase());
-            return ResponseEntity.ok(message);
-        }
-
-         @GetMapping("/viewAllLeaveApplications")
-            public ResponseEntity<List<Leave>> viewAllLeaveApplications(@RequestHeader("Authorization") String authHeader){
-                 String token = authHeader.substring(7);
-                 if(!jwtUtil.validateToken(token).get("role").equals("ADMIN")){
-                 return ResponseEntity.status(403).body(null);
-                }
-                     List<Leave> leaves = adminService.findAllLeaves();
-                    return ResponseEntity.ok(leaves);
-
+    @GetMapping
+    public ResponseEntity<List<Admin>> getAllAdmins() {
+        return ResponseEntity.ok(adminService.getAllAdmins());
     }
 
-        @DeleteMapping("/deleteEmployee")
-             public ResponseEntity<String> deleteEmployee(
-            @RequestParam Long employeeId , @RequestHeader("Authorization") String authHeader){
-
-            String token = authHeader.substring(7);
-             if(!jwtUtil.validateToken(token).get("role").equals("ADMIN")){
-            return ResponseEntity.status(403).body("Access Denied");
-             }
-                String message = adminService.deleteEmployee(employeeId);
-                return ResponseEntity.ok(message);
+    @GetMapping("/search")
+    public ResponseEntity<List<Admin>> searchAdmins(@RequestParam String name) {
+        return ResponseEntity.ok(adminService.getAdminByName(name));
     }
 
-        @DeleteMapping("/deleteManager")
-            public ResponseEntity<String> deleteManager(
-            @RequestParam Long managerId , @RequestHeader("Authorization") String authHeader){
-
-                String token = authHeader.substring(7);
-                if(!jwtUtil.validateToken(token).get("role").equals("ADMIN")){
-            return ResponseEntity.status(403).body("Access Denied");
-             }
-                 String message = adminService.deleteManager(managerId);
-                 return ResponseEntity.ok(message);
+    @PutMapping("/{adminId}")
+    public ResponseEntity<Admin> updateAdmin(@PathVariable Long adminId, @RequestBody Admin admin) {
+        return ResponseEntity.ok(adminService.updateAdmin(adminId, admin));
     }
 
-        @GetMapping("/managerCount")
-             public ResponseEntity<Long> getManagerCount(@RequestHeader("Authorization") String authHeader){
-             String token = authHeader.substring(7);
-                 if(!jwtUtil.validateToken(token).get("role").equals("ADMIN")){
-             return ResponseEntity.status(403).body(null);
-        }
-
-        return ResponseEntity.ok(adminService.numberOfManagers());
-
-    }
-
-            @GetMapping("/employeeCount")
-                public ResponseEntity<Long> getEmployeeCount(@RequestHeader("Authorization") String authHeader){
-                String token = authHeader.substring(7);
-        if(!jwtUtil.validateToken(token).get("role").equals("ADMIN")){
-            return ResponseEntity.status(403).body(null);
-        }
-
-        return ResponseEntity.ok(adminService.numberOfEmployees());
-
+    @DeleteMapping("/{adminId}")
+    public ResponseEntity<Void> deleteAdmin(@PathVariable Long adminId) {
+        adminService.deleteAdmin(adminId);
+        return ResponseEntity.noContent().build();
     }
 
 
+    // ---------------------------
+    // 👨‍💼 Manager Endpoints
+    // ---------------------------
 
+    @PostMapping("/managers")
+    public ResponseEntity<Manager> addManager(@RequestBody Manager manager) {
+        return ResponseEntity.ok(adminService.addManager(manager));
+    }
+
+    @GetMapping("/managers/{managerId}")
+    public ResponseEntity<Manager> getManagerById(@PathVariable Long managerId) {
+        return ResponseEntity.ok(adminService.getManagerById(managerId));
+    }
+
+    @GetMapping("/managers/email/{email}")
+    public ResponseEntity<Manager> getManagerByEmail(@PathVariable String email) {
+        return ResponseEntity.ok(adminService.getManagerByEmail(email));
+    }
+
+    @GetMapping("/managers")
+    public ResponseEntity<List<Manager>> getAllManagers() {
+        return ResponseEntity.ok(adminService.getAllManagers());
+    }
+
+    @GetMapping("/managers/search")
+    public ResponseEntity<List<Manager>> searchManagers(@RequestParam String name) {
+        return ResponseEntity.ok(adminService.getAllManagersByName(name));
+    }
+
+    @PutMapping("/managers/{managerId}")
+    public ResponseEntity<Manager> updateManager(@PathVariable Long managerId, @RequestBody Manager manager) {
+        return ResponseEntity.ok(adminService.updateManager(managerId, manager));
+    }
+
+    @DeleteMapping("/managers/{managerId}")
+    public ResponseEntity<Void> deleteManager(@PathVariable Long managerId) {
+        adminService.deleteManager(managerId);
+        return ResponseEntity.noContent().build();
+    }
+
+
+    // ---------------------------
+    // 👨‍🔧 Employee Endpoints
+    // ---------------------------
+
+    @PostMapping("/employees")
+    public ResponseEntity<Employee> addEmployee(@RequestBody Employee employee) {
+        return ResponseEntity.ok(adminService.addEmployee(employee));
+    }
+
+    @GetMapping("/employees/{employeeId}")
+    public ResponseEntity<Employee> getEmployeeById(@PathVariable Long employeeId) {
+        return ResponseEntity.ok(adminService.getEmployeeById(employeeId));
+    }
+
+    @GetMapping("/employees/email/{email}")
+    public ResponseEntity<Employee> getEmployeeByEmail(@PathVariable String email) {
+        return ResponseEntity.ok(adminService.getEmployeeByEmail(email));
+    }
+
+    @GetMapping("/employees")
+    public ResponseEntity<List<Employee>> getAllEmployees() {
+        return ResponseEntity.ok(adminService.getAllEmployees());
+    }
+
+    @GetMapping("/employees/search")
+    public ResponseEntity<List<Employee>> searchEmployees(@RequestParam String name) {
+        return ResponseEntity.ok(adminService.getAllEmployeesByName(name));
+    }
+
+    @PutMapping("/employees/{employeeId}")
+    public ResponseEntity<Employee> updateEmployee(@PathVariable Long employeeId, @RequestBody Employee employee) {
+        return ResponseEntity.ok(adminService.updateEmployee(employeeId, employee));
+    }
+
+    @DeleteMapping("/employees/{employeeId}")
+    public ResponseEntity<Void> deleteEmployee(@PathVariable Long employeeId) {
+        adminService.deleteEmployee(employeeId);
+        return ResponseEntity.noContent().build();
+    }
 }

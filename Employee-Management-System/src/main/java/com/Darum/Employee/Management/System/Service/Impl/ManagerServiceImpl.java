@@ -1,228 +1,129 @@
 package com.Darum.Employee.Management.System.Service.Impl;
 
-import com.Darum.Employee.Management.System.Model.Employee;
-import com.Darum.Employee.Management.System.Model.Manager;
-import com.Darum.Employee.Management.System.Model.ResetToken;
+import com.Darum.Employee.Management.System.Entites.Employee;
+import com.Darum.Employee.Management.System.Entites.Manager;
 import com.Darum.Employee.Management.System.Repository.EmployeeRepository;
 import com.Darum.Employee.Management.System.Repository.ManagerRepository;
-import com.Darum.Employee.Management.System.Repository.ResetTokenRepository;
 import com.Darum.Employee.Management.System.Service.ManagerService;
-import com.Darum.Employee.Management.System.Untils.JWTUtil;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class ManagerServiceImpl implements ManagerService {
-
-    private final JWTUtil jwtUtil;
-
-
-    @Autowired
-    private ManagerRepository managerRepository;
-
-    @Autowired
-    private EmployeeRepository employeeRepository;
-
-    @Autowired
-    private ResetTokenRepository resetTokenRepository;
+    private final ManagerRepository managerRepository;
+    private final EmployeeRepository employeeRepository;
 
     @Override
-    public Manager checkManager(String fullName, String password) {
-        return managerRepository.findManagerByFullNameAndPassword(fullName,password);
+    public Manager getManagerById(Long managerId) {
+        return managerRepository.findById(managerId)
+                .orElseThrow(() -> new RuntimeException("Manager not found"));
     }
 
     @Override
-    public Manager findManagerById(Long managerId) {
-        return managerRepository.findById(managerId).orElse(null);
-    }
-
-
-    @Override
-    public Manager findManagerByName(String managerFullName) {
-        return managerRepository.findManagerByFullName(managerFullName);
+    public Manager getManagerByEmail(String email) {
+        return managerRepository.getManagerByEmail(email);
     }
 
     @Override
-    public Manager findManagerByEmail(String managerEmail) {
-        return managerRepository.findManagerByEmail(managerEmail);
-    }
-
-    @Override
-    public List<Manager> findAllManagers() {
+    public List<Manager> getAllManagers() {
         return managerRepository.findAll();
     }
 
     @Override
-    public List<Employee> findAllEmployees() {
+    public List<Manager> getManagerByName(String name) {
+        return managerRepository.getManagerByName(name);
+    }
+
+    @Override
+    public Manager updateManager(Long managerId, Manager manager) {
+        Manager existingManager = managerRepository.findById(managerId)
+                .orElseThrow(() -> new RuntimeException("Manager not found"));
+
+        existingManager.setFirstName(manager.getFirstName());
+        existingManager.setLastName(manager.getLastName());
+        existingManager.setEmail(manager.getEmail());
+        existingManager.setDepartment(manager.getDepartment());
+        existingManager.setPassword(manager.getPassword());
+        existingManager.setPhoneNumber(manager.getPhoneNumber());
+        existingManager.setRole(manager.getRole());
+        existingManager.setDepartment(manager.getDepartment());
+        existingManager.setPosition(existingManager.getPosition());
+
+        return managerRepository.save(existingManager);
+    }
+
+    @Override
+    public void deleteManager(Long managerId) {
+        if (!managerRepository.existsById(managerId)) {
+            throw new RuntimeException("Manager not found");
+        }
+        managerRepository.deleteById(managerId);
+    }
+
+    // ------------------ Employee CRUD ------------------
+
+    @Override
+    public Employee addEmployee(Employee employee) {
+        return employeeRepository.save(employee);
+    }
+
+    @Override
+    public Employee getEmployeeById(Long employeeId) {
+        return employeeRepository.findById(employeeId)
+                .orElseThrow(() -> new RuntimeException("Employee not found"));
+    }
+
+    @Override
+    public Employee getEmployeeByEmail(String email) {
+        return employeeRepository.getEmployeeByEmail(email);
+    }
+
+    @Override
+    public List<Employee> getAllEmployees() {
         return employeeRepository.findAll();
     }
 
     @Override
-    public String updateEmployeeStatus(Long employeeId, String status) {
-        Optional<Employee> employee = employeeRepository.findById(employeeId);
-
-        if (employee.isPresent()) {
-            Employee emp = new Employee();
-
-            emp.setStatus(status);
-            employeeRepository.save(emp);
-
-            return "Employee status successfully  updated";
-        }
-        else {
-            return "Employee not found";
-        }
-
+    public List<Employee> getAllEmployeesByName(String name) {
+        return employeeRepository.getEmployeeByName(name);
     }
 
     @Override
-    public String updateEmployeeDepartment(Long employeeId, String department) {
-        Optional<Employee> employee = employeeRepository.findById(employeeId);
+    public Employee updateEmployee(Long employeeId, Employee employee) {
+        Employee existingEmployee = employeeRepository.findById(employeeId)
+                .orElseThrow(() -> new RuntimeException("Employee not found"));
 
-        if (employee.isPresent()) {
-            Employee emp = new Employee();
+        existingEmployee.setFirstName(employee.getFirstName());
+        existingEmployee.setLastName(employee.getLastName());
+        existingEmployee.setEmail(employee.getEmail());
+        existingEmployee.setPhoneNumber(employee.getPhoneNumber());
+        existingEmployee.setDepartment(employee.getDepartment());
+        existingEmployee.setPhoneNumber(employee.getPhoneNumber());
+        existingEmployee.setPosition(employee.getPosition());
+        existingEmployee.setEmploymentType(employee.getEmploymentType());
+        existingEmployee.setSalary(employee.getSalary());
+        existingEmployee.setDateOfBirth(employee.getDateOfBirth());
+        existingEmployee.setAddress(employee.getAddress());
+        existingEmployee.setRole(employee.getRole());
+        existingEmployee.setHireDate(employee.getHireDate());
+        existingEmployee.setGender(employee.getGender());
+        existingEmployee.setPassword(employee.getPassword());
 
-            emp.setDepartment(department);
-            employeeRepository.save(emp);
 
-            return "Employee department successfully  updated";
-        }
-        else {
-            return "Employee not found";
-        }    }
-
-    @Override
-    public String updateEmployeePosition(Long employeeId, String position) {
-        Optional<Employee> employee = employeeRepository.findById(employeeId);
-
-        if (employee.isPresent()) {
-            Employee emp = new Employee();
-
-            emp.setPosition(position);
-            employeeRepository.save(emp);
-
-            return "Employee position successfully  updated";
-        }
-        else {
-            return "Employee not found";
-        }    }
-
-    @Override
-    public String updateEmployeeEmploymentType(Long employeeId, String employmentType) {
-        Optional<Employee> employee = employeeRepository.findById(employeeId);
-
-        if (employee.isPresent()) {
-            Employee emp = new Employee();
-
-            emp.setEmploymentType(employmentType);
-            employeeRepository.save(emp);
-
-            return "Employee employment type successfully  updated";
-        }
-        else {
-            return "Employee not found";
-        }    }
-
-    @Override
-    public String updateEmployeeSalary(Long employeeId, String salary) {
-        Optional<Employee> employee = employeeRepository.findById(employeeId);
-
-        if (employee.isPresent()) {
-            Employee emp = new Employee();
-
-            emp.setEmploymentType(salary);
-            employeeRepository.save(emp);
-
-            return "Employee salary successfully  updated";
-        }
-        else {
-            return "Employee not found";
-        }    }
-
-    @Override
-    public String updateEmployeeHireDate(Long employeeId, LocalDate hireDate) {
-        Optional<Employee> employee = employeeRepository.findById(employeeId);
-
-        if (employee.isPresent()) {
-            Employee emp = new Employee();
-
-            emp.setHireDate(hireDate);
-            employeeRepository.save(emp);
-
-            return "Employee hireDate successfully  updated";
-        }
-        else {
-            return "Employee not found";
-        }
+        return employeeRepository.save(existingEmployee);
     }
 
     @Override
-    public String generateResetPasswordToken(String email) {
-
-        Optional<Manager> managerOpt = managerRepository.findManagerByEmailOpt(email);
-
-        if(managerOpt.isPresent()) {
-            String token = jwtUtil.generatePasswordToken(email, 15);
-
-            ResetToken resetToken = new ResetToken();
-            resetToken.setToken(token);
-            resetToken.setEmail(email);
-            resetToken.setCreatedAt(LocalDateTime.now());
-            resetToken.setExpiresAt(LocalDateTime.now().plusMinutes(15));
-
-            resetTokenRepository.save(resetToken);
-
-            return token;
+    public void deleteEmployee(Long employeeId) {
+        if (!employeeRepository.existsById(employeeId)) {
+            throw new RuntimeException("Employee not found");
         }
-
-        return null;
-    }
-
-
-    @Override
-    public boolean validateResetPasswordToken(String token) {
-
-        Optional<ResetToken>  resetToken = resetTokenRepository.findByToken(token);
-        return resetToken.isPresent() && !isTokenExpired(token);
-
-    }
-
-    @Override
-    public boolean changePassword(Manager manager, String oldPassword, String newPassword) {
-
-        if(manager.getPassword().equals(oldPassword)) {
-            manager.setPassword(newPassword);
-            managerRepository.save(manager);
-            return true;
-        }
-        else {
-            return false;
-        }
-    }
-
-
-    @Override
-    public void deleteResetPasswordToken(String token)
-    {
-            resetTokenRepository.deleteByToken(token);
-    }
-
-    @Override
-    public boolean isTokenExpired(String token) {
-        Optional<ResetToken> resetToken = resetTokenRepository.findByToken(token);
-
-        if (resetToken.isPresent()) {
-            resetToken.get().getExpiresAt().isBefore(LocalDateTime.now());
-        }
-
-        return true;
-
+        employeeRepository.deleteById(employeeId);
     }
 
 }

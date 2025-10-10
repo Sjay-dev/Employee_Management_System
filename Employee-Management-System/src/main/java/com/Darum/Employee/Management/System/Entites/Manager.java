@@ -1,10 +1,8 @@
-package com.Darum.Employee.Management.System.Model;
+package com.Darum.Employee.Management.System.Entites;
 
+import com.Darum.Employee.Management.System.Entites.Enum.Role;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -17,6 +15,7 @@ import java.util.List;
 @Table(name = "managers")
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class Manager {
@@ -26,7 +25,10 @@ public class Manager {
     private Long managerId;
 
     @Column(nullable = false)
-    private String fullName;
+    private String firstName;
+
+    @Column(nullable = false)
+    private String lastName;
 
     @Column(nullable = false)
     private String password;
@@ -38,7 +40,11 @@ public class Manager {
     private String phoneNumber;
 
     private String department;
+
     private String position;
+
+    @Builder.Default
+    private Role role = Role.MANAGER;
 
     @CreationTimestamp
     private LocalDateTime createdAt;

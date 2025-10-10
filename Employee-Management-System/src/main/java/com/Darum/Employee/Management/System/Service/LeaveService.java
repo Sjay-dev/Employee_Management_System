@@ -1,7 +1,6 @@
 package com.Darum.Employee.Management.System.Service;
 
-import com.Darum.Employee.Management.System.Model.Employee;
-import com.Darum.Employee.Management.System.Model.Leave;
+import com.Darum.Employee.Management.System.Entites.Leave;
 
 import java.util.List;
 
