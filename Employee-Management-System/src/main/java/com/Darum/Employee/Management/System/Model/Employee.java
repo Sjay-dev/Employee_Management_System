@@ -51,6 +51,8 @@ import java.util.List;
     @Column(nullable = false)
     private String gender;
 
+
+
     @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Leave> leaves = new ArrayList<>();
 
