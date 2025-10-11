@@ -3,13 +3,9 @@ package com.Darum.Employee.Management.System.Controller;
 
 import com.Darum.Employee.Management.System.Entites.Admin;
 import com.Darum.Employee.Management.System.Entites.Employee;
-import com.Darum.Employee.Management.System.Entites.Leave;
 import com.Darum.Employee.Management.System.Entites.Manager;
 import com.Darum.Employee.Management.System.Service.AdminService;
-import com.Darum.Employee.Management.System.Service.ManagerService;
-import com.Darum.Employee.Management.System.Untils.JWTUtil;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,7 +22,7 @@ public class AdminController {
     // 🧩 Admin Endpoints
     // ---------------------------
 
-    @PostMapping("/addAdmin")
+    @PostMapping()
     public ResponseEntity<Admin> addAdmin(@RequestBody Admin admin) {
         System.out.println("Incoming admin: " + admin);
         Admin savedAdmin = adminService.addAdmin(admin);
@@ -43,7 +39,7 @@ public class AdminController {
         return ResponseEntity.ok(adminService.getAdminByEmail(email));
     }
 
-    @GetMapping("/get")
+    @GetMapping()
     public ResponseEntity<List<Admin>> getAllAdmins() {
         return ResponseEntity.ok(adminService.getAllAdmins());
     }

@@ -2,9 +2,8 @@ package com.Darum.Employee.Management.System.DTO;
 
 import lombok.*;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
+@Getter
+@Setter
 public class LoginRequest {
     private String email;
     private String password;
