@@ -1,0 +1,29 @@
+spring:
+  application:
+    name: employee-management-system
+  datasource:
+    url: jdbc:postgresql://localhost:5432/employee_management_system
+    driverClassName: org.postgresql.Driver
+    username: postgres
+    password: EarthDb24
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+  cloud:
+    config:
+      enabled: false
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    prefer-ip-address: true
+
+server:
+  port: 8081
+
+jwt:
+  secret: mySecretKey
+  expiration: 1800000
