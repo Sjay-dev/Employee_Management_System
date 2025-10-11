@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/admins")
+@RequestMapping("/api/admin")
 @RequiredArgsConstructor
 public class AdminController {
 
@@ -26,7 +26,7 @@ public class AdminController {
     // 🧩 Admin Endpoints
     // ---------------------------
 
-    @PostMapping
+    @PostMapping("/addAdmin")
     public ResponseEntity<Admin> addAdmin(@RequestBody Admin admin) {
         System.out.println("Incoming admin: " + admin);
         Admin savedAdmin = adminService.addAdmin(admin);
@@ -43,7 +43,7 @@ public class AdminController {
         return ResponseEntity.ok(adminService.getAdminByEmail(email));
     }
 
-    @GetMapping
+    @GetMapping("/get")
     public ResponseEntity<List<Admin>> getAllAdmins() {
         return ResponseEntity.ok(adminService.getAllAdmins());
     }

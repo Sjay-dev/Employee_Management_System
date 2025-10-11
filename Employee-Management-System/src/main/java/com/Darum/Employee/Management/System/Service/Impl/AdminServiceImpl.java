@@ -49,18 +49,28 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
-    public Admin updateAdmin(Long adminId, Admin admin) {
+    public Admin updateAdmin(Long adminId, Admin adminDetails) {
         Admin existingAdmin = adminRepository.findById(adminId)
-                .orElseThrow(() -> new RuntimeException("Admin not found"));
+                .orElseThrow(() -> new RuntimeException("Admin not found with ID: " + adminId));
 
-        existingAdmin.setFirstName(admin.getFirstName());
-        existingAdmin.setLastName(admin.getLastName());
-        existingAdmin.setEmail(admin.getEmail());
-        existingAdmin.setPassword(admin.getPassword());
-        existingAdmin.setRole(admin.getRole());
+        if (adminDetails.getFirstName() != null)
+            existingAdmin.setFirstName(adminDetails.getFirstName());
+
+        if (adminDetails.getLastName() != null)
+            existingAdmin.setLastName(adminDetails.getLastName());
+
+        if (adminDetails.getEmail() != null)
+            existingAdmin.setEmail(adminDetails.getEmail());
+
+        if (adminDetails.getPassword() != null)
+            existingAdmin.setPassword(adminDetails.getPassword());
+
+        if (adminDetails.getRole() != null)
+            existingAdmin.setRole(adminDetails.getRole());
 
         return adminRepository.save(existingAdmin);
     }
+
 
     @Override
     public void deleteAdmin(Long adminId) {
