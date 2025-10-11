@@ -1,14 +1,18 @@
 package com.Darum.Employee.Management.System.Config;
 
+import com.Darum.Employee.Management.System.Entites.Admin;
+import com.Darum.Employee.Management.System.Entites.Enum.Role;
+import com.Darum.Employee.Management.System.Repository.AdminRepository;
 import com.Darum.Employee.Management.System.Security.JwtTokenFilter;
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
@@ -23,8 +27,8 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/v1/auth/**").permitAll()
-                        .requestMatchers("/api/v1/admins/**").hasRole("ADMIN")
+                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)
@@ -33,6 +37,28 @@ public class SecurityConfig {
 
         return http.build();
     }
+
+    @Bean
+    public CommandLineRunner DataSeeder(AdminRepository adminRepository) {
+        return args -> {
+            if (adminRepository.count() == 0) {
+                Admin admin = new Admin();
+                admin.setFirstName("Super");
+                admin.setLastName("Admin");
+                admin.setEmail("admin@darum.com");
+                admin.setPassword(passwordEncoder().encode("ChangeMe123!"));
+                admin.setRole(Role.ADMIN);
+                adminRepository.save(admin);
+            }
+        };
+    }
+
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
 
 }
 

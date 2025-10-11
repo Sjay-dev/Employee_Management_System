@@ -39,7 +39,7 @@ public class AdminController {
         return ResponseEntity.ok(adminService.getAdminByEmail(email));
     }
 
-    @GetMapping()
+    @GetMapping
     public ResponseEntity<List<Admin>> getAllAdmins() {
         return ResponseEntity.ok(adminService.getAllAdmins());
     }
