@@ -16,9 +16,6 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
             "OR LOWER(e.lastName) LIKE LOWER(CONCAT('%', :name, '%'))")
     public List<Employee> findEmployeeByName(String name);
 
-    public List<Employee> findEmployeeByDepartment_DepartmentId(String departmentId);
-
-    public List<Employee> findEmployeeByManager_UserId(String managerId);
 
     public Optional<Employee> findEmployeeByEmail(String email);
 

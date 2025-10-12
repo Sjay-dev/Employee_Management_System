@@ -51,8 +51,6 @@ import java.util.List;
     @UpdateTimestamp
     private LocalDateTime updatedAt;
 
-    @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Leave> leaves = new ArrayList<>();
 
     @ManyToOne
     @JoinColumn(name = "managerId")

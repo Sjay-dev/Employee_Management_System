@@ -2,10 +2,17 @@ package com.Darum.Employee.Management.System.Controller;
 
 
 import com.Darum.Employee.Management.System.Entites.Admin;
+import com.Darum.Employee.Management.System.Entites.Department;
 import com.Darum.Employee.Management.System.Entites.Employee;
+import com.Darum.Employee.Management.System.Entites.Enum.Role;
 import com.Darum.Employee.Management.System.Entites.Manager;
+import com.Darum.Employee.Management.System.Security.JwtToken;
 import com.Darum.Employee.Management.System.Service.AdminService;
+import com.Darum.Employee.Management.System.Service.DepartmentService;
+import com.Darum.Employee.Management.System.Service.EmployeeService;
+import com.Darum.Employee.Management.System.Service.ManagerService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,131 +21,247 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/admin")
 @RequiredArgsConstructor
+@CrossOrigin("*")
 public class AdminController {
 
+    private final EmployeeService employeeService;
+    private final ManagerService managerService;
     private final AdminService adminService;
+    private final DepartmentService departmentService;
+    private final JwtToken jwtToken;
 
-    // ---------------------------
-    // 🧩 Admin Endpoints
-    // ---------------------------
-
-    @PostMapping()
-    public ResponseEntity<Admin> addAdmin(@RequestBody Admin admin) {
-        System.out.println("Incoming admin: " + admin);
-        Admin savedAdmin = adminService.addAdmin(admin);
-        return ResponseEntity.ok(savedAdmin);
+    private String getRoleFromHeader(String authHeader) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            throw new RuntimeException("Missing or invalid Authorization header");
+        }
+        String token = authHeader.substring(7);
+        if (!jwtToken.validateToken(token)) {
+            throw new RuntimeException("Invalid or expired token");
+        }
+        return jwtToken.getRoleFromToken(token);
     }
 
-    @GetMapping("/{adminId}")
-    public ResponseEntity<Admin> getAdminById(@PathVariable Long adminId) {
-        return ResponseEntity.ok(adminService.getAdminById(adminId));
+    private String getEmailFromHeader(String authHeader) {
+        String token = authHeader.substring(7);
+        return jwtToken.getEmailFromToken(token);
     }
 
-    @GetMapping("/email/{email}")
-    public ResponseEntity<Admin> getAdminByEmail(@PathVariable String email) {
-        return ResponseEntity.ok(adminService.getAdminByEmail(email));
+    //  ADMIN PROFILE MANAGEMENT
+
+    // Get own profile
+    @GetMapping("/me")
+    public ResponseEntity<Admin> getMyProfile(@RequestHeader("Authorization") String authHeader) {
+        String email = getEmailFromHeader(authHeader);
+        Admin me = adminService.getAdminByEmail(email);
+        return ResponseEntity.ok(me);
     }
 
-    @GetMapping
-    public ResponseEntity<List<Admin>> getAllAdmins() {
+    // Update own profile
+    @PutMapping("/me")
+    public ResponseEntity<Admin> updateMyProfile(@RequestHeader("Authorization") String authHeader,
+                                                 @RequestBody Admin admin) {
+        String email = getEmailFromHeader(authHeader);
+        Admin me = adminService.getAdminByEmail(email);
+
+
+        return ResponseEntity.ok(adminService.updateAdmin(me.getUserId(), admin));
+    }
+
+
+    // Create a new Admin (admin-only)
+    @PostMapping("/create")
+    public ResponseEntity<?> createAdmin(@RequestHeader("Authorization") String authHeader,
+                                         @RequestBody Admin admin) {
+        String role = getRoleFromHeader(authHeader);
+        if (!"ADMIN".equals(role)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied");
+        }
+
+        admin.setRole(Role.ADMIN);
+        return ResponseEntity.ok(adminService.addAdmin(admin));
+    }
+
+    // Get all admins (admin-only)
+    @GetMapping("/all")
+    public ResponseEntity<?> getAllAdmins(@RequestHeader("Authorization") String authHeader) {
+        String role = getRoleFromHeader(authHeader);
+        if (!"ADMIN".equals(role)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied");
+        }
+
         return ResponseEntity.ok(adminService.getAllAdmins());
     }
 
-    @GetMapping("/search")
-    public ResponseEntity<List<Admin>> searchAdmins(@RequestParam String name) {
-        return ResponseEntity.ok(adminService.getAdminByName(name));
-    }
+    // Delete another admin (admin-only)
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteAdmin(@RequestHeader("Authorization") String authHeader,
+                                         @PathVariable Long id) {
+        String role = getRoleFromHeader(authHeader);
+        if (!"ADMIN".equals(role)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied");
+        }
 
-    @PutMapping("/{adminId}")
-    public ResponseEntity<Admin> updateAdmin(@PathVariable Long adminId, @RequestBody Admin admin) {
-        return ResponseEntity.ok(adminService.updateAdmin(adminId, admin));
-    }
-
-    @DeleteMapping("/{adminId}")
-    public ResponseEntity<Void> deleteAdmin(@PathVariable Long adminId) {
-        adminService.deleteAdmin(adminId);
+        adminService.deleteAdmin(id);
         return ResponseEntity.noContent().build();
     }
 
-
-    // ---------------------------
-    // 👨‍💼 Manager Endpoints
-    // ---------------------------
-
-    @PostMapping("/managers")
-    public ResponseEntity<Manager> addManager(@RequestBody Manager manager) {
-        return ResponseEntity.ok(adminService.addManager(manager));
-    }
-
-    @GetMapping("/managers/{managerId}")
-    public ResponseEntity<Manager> getManagerById(@PathVariable Long managerId) {
-        return ResponseEntity.ok(adminService.getManagerById(managerId));
-    }
-
-    @GetMapping("/managers/email/{email}")
-    public ResponseEntity<Manager> getManagerByEmail(@PathVariable String email) {
-        return ResponseEntity.ok(adminService.getManagerByEmail(email));
-    }
-
-    @GetMapping("/managers")
-    public ResponseEntity<List<Manager>> getAllManagers() {
-        return ResponseEntity.ok(adminService.getAllManagers());
-    }
-
-    @GetMapping("/managers/search")
-    public ResponseEntity<List<Manager>> searchManagers(@RequestParam String name) {
-        return ResponseEntity.ok(adminService.getAllManagersByName(name));
-    }
-
-    @PutMapping("/managers/{managerId}")
-    public ResponseEntity<Manager> updateManager(@PathVariable Long managerId, @RequestBody Manager manager) {
-        return ResponseEntity.ok(adminService.updateManager(managerId, manager));
-    }
-
-    @DeleteMapping("/managers/{managerId}")
-    public ResponseEntity<Void> deleteManager(@PathVariable Long managerId) {
-        adminService.deleteManager(managerId);
-        return ResponseEntity.noContent().build();
-    }
-
-
-    // ---------------------------
-    // 👨‍🔧 Employee Endpoints
-    // ---------------------------
+    // 🔹 EMPLOYEE MANAGEMENT (for admins only)
 
     @PostMapping("/employees")
-    public ResponseEntity<Employee> addEmployee(@RequestBody Employee employee) {
-        return ResponseEntity.ok(adminService.addEmployee(employee));
+    public ResponseEntity<?> createEmployee(@RequestHeader("Authorization") String authHeader,
+                                            @RequestBody Employee employee) {
+        String role = getRoleFromHeader(authHeader);
+        if (!"ADMIN".equals(role)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied");
+        }
+
+        return ResponseEntity.ok(employeeService.addEmployee(employee));
     }
 
-    @GetMapping("/employees/{employeeId}")
-    public ResponseEntity<Employee> getEmployeeById(@PathVariable Long employeeId) {
-        return ResponseEntity.ok(adminService.getEmployeeById(employeeId));
+    @PutMapping("/employees/{id}")
+    public ResponseEntity<?> updateEmployee(@RequestHeader("Authorization") String authHeader,Long employeeId,
+                                            @RequestBody Employee employee) {
+        String role = getRoleFromHeader(authHeader);
+        if (!"ADMIN".equals(role)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied");
+        }
+
+        return ResponseEntity.ok(employeeService.updateEmployee(employeeId, employee));
     }
 
-    @GetMapping("/employees/email/{email}")
-    public ResponseEntity<Employee> getEmployeeByEmail(@PathVariable String email) {
-        return ResponseEntity.ok(adminService.getEmployeeByEmail(email));
+    @DeleteMapping("/employees/{id}")
+    public ResponseEntity<?> deleteEmployee(@RequestHeader("Authorization") String authHeader,Long employeeId) {
+        String role = getRoleFromHeader(authHeader);
+        if (!"ADMIN".equals(role)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied");
+        }
+
+        employeeService.deleteEmployee(employeeId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/employees/{id}")
+    public ResponseEntity<?> getEmployee(@RequestHeader("Authorization") String authHeader,Long employeeId) {
+        String role = getRoleFromHeader(authHeader);
+        if (!"ADMIN".equals(role)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied");
+        }
+
+        return ResponseEntity.ok(employeeService.getEmployeeById(employeeId));
     }
 
     @GetMapping("/employees")
-    public ResponseEntity<List<Employee>> getAllEmployees() {
-        return ResponseEntity.ok(adminService.getAllEmployees());
+    public ResponseEntity<?> getAllEmployees(@RequestHeader("Authorization") String authHeader) {
+        String role = getRoleFromHeader(authHeader);
+        if (!"ADMIN".equals(role)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied");
+        }
+
+        return ResponseEntity.ok(employeeService.getAllEmployees());
     }
 
-    @GetMapping("/employees/search")
-    public ResponseEntity<List<Employee>> searchEmployees(@RequestParam String name) {
-        return ResponseEntity.ok(adminService.getAllEmployeesByName(name));
+
+    // 🔹 MANAGER MANAGEMENT (for admins only)
+
+    @PostMapping("/managers")
+    public ResponseEntity<?> createManager(@RequestHeader("Authorization") String authHeader,
+                                           @RequestBody Manager manager) {
+        String role = getRoleFromHeader(authHeader);
+        if (!"ADMIN".equals(role)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied");
+        }
+
+        return ResponseEntity.ok(managerService.addManager(manager));
     }
 
-    @PutMapping("/employees/{employeeId}")
-    public ResponseEntity<Employee> updateEmployee(@PathVariable Long employeeId, @RequestBody Employee employee) {
-        return ResponseEntity.ok(adminService.updateEmployee(employeeId, employee));
+    @PutMapping("/managers/{id}")
+    public ResponseEntity<?> updateManager(@RequestHeader("Authorization") String authHeader,
+                                           Long managerId,
+                                           @RequestBody Manager manager) {
+        String role = getRoleFromHeader(authHeader);
+        if (!"ADMIN".equals(role)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied");
+        }
+
+        return ResponseEntity.ok(managerService.updateManager(managerId, manager));
     }
 
-    @DeleteMapping("/employees/{employeeId}")
-    public ResponseEntity<Void> deleteEmployee(@PathVariable Long employeeId) {
-        adminService.deleteEmployee(employeeId);
+    @DeleteMapping("/managers/{id}")
+    public ResponseEntity<?> deleteManager(@RequestHeader("Authorization") String authHeader,
+                                          Long managerId) {
+        String role = getRoleFromHeader(authHeader);
+        if (!"ADMIN".equals(role)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied");
+        }
+
+        managerService.deleteManager(managerId);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/managers/{id}")
+    public ResponseEntity<?> getManager(@RequestHeader("Authorization") String authHeader,
+                                        Long managerId) {
+        String role = getRoleFromHeader(authHeader);
+        if (!"ADMIN".equals(role)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied");
+        }
+
+        return ResponseEntity.ok(managerService.getManagerById(managerId));
+    }
+
+    @GetMapping("/managers")
+    public ResponseEntity<?> getAllManagers(@RequestHeader("Authorization") String authHeader) {
+        String role = getRoleFromHeader(authHeader);
+        if (!"ADMIN".equals(role)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied");
+        }
+
+        return ResponseEntity.ok(managerService.getAllManagers());
+    }
+
+    // DEPARTMENT MANAGEMENT
+
+    @PostMapping("/departments")
+    public ResponseEntity<?> createDepartment(@RequestHeader("Authorization") String authHeader,
+                                              @RequestBody Department department) {
+        if (!"ADMIN".equals(getRoleFromHeader(authHeader))) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied");
+        }
+        return ResponseEntity.ok(departmentService.addDepartment(department));
+    }
+
+    @PutMapping("/departments/{id}")
+    public ResponseEntity<?> updateDepartment(@RequestHeader("Authorization") String authHeader, Long departmentId,
+                                              @RequestBody Department department) {
+        if (!"ADMIN".equals(getRoleFromHeader(authHeader))) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied");
+        }
+        return ResponseEntity.ok(departmentService.updateDepartmentDetails(departmentId, department));
+    }
+
+    @DeleteMapping("/departments/{id}")
+    public ResponseEntity<?> deleteDepartment(@RequestHeader("Authorization") String authHeader, Long departmentId) {
+        if (!"ADMIN".equals(getRoleFromHeader(authHeader))) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied");
+        }
+        departmentService.deleteDepartment(departmentId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/departments/{id}")
+    public ResponseEntity<?> getDepartment(@RequestHeader("Authorization") String authHeader, Long departmentId) {
+        if (!"ADMIN".equals(getRoleFromHeader(authHeader))) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied");
+        }
+        return ResponseEntity.ok(departmentService.getDepartmentById(departmentId));
+    }
+
+    @GetMapping("/departments")
+    public ResponseEntity<?> getAllDepartments(@RequestHeader("Authorization") String authHeader) {
+        if (!"ADMIN".equals(getRoleFromHeader(authHeader))) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied");
+        }
+        return ResponseEntity.ok(departmentService.getAllDepartments());
+    }
 }
+

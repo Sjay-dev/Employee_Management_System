@@ -16,7 +16,6 @@ public interface ManagerRepository extends JpaRepository<Manager,Long> {
             "OR LOWER(m.lastName) LIKE LOWER(CONCAT('%', :name, '%'))")
         public List<Manager> findManagerByName(String name);
 
-        Optional<Manager> findManagerByDepartment_DepartmentId (Long departmentId);
 
         Optional<Manager> findManagerByEmail (String email);
 
