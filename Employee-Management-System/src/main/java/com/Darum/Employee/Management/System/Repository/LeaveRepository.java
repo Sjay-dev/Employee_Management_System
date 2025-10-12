@@ -6,19 +6,22 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface LeaveRepository extends JpaRepository<Leave,Long> {
 
-    @Query("SELECT l from Leave l WHERE l.employee.employeeId = :employeeId")
-    public List<Leave> findLeavesByEmployeeId(Long employeeId);
+     public Optional<Leave> findLeavesByEmployee_UserId (Long employeeId);
 
-    @Query("SELECT l from Leave l WHERE l.status = :status ")
-    public List<Leave> findLeavesByStatus(String status);
+     public Optional<Leave> findLeaveByManager_UserId (Long managerId);
 
-    @Query ("SELECT l from Leave l WHERE l.manager.managerId = :managerId")
-    public List<Leave> findLeavesByManagerId(Long managerId);
+     public Optional<Leave> findLeaveByStartDate (LocalDate startDate);
+
+     public Optional<Leave> findLeaveByEndDate (LocalDate endDate);
+
+
 
 
 }

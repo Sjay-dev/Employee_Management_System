@@ -20,11 +20,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-    public class Employee {
-
-        @Id
-        @GeneratedValue(strategy = GenerationType.IDENTITY)
-        private Long employeeId;
+    public class Employee extends User {
 
     @Column(nullable = false)
     private String firstName;
@@ -44,10 +40,10 @@ import java.util.List;
 
     private String salary;
 
+    private String address;
+
     @Column(nullable = false)
     private LocalDate dateOfBirth;
-
-    private String address;
 
     @Column(nullable = false)
     private String gender;
@@ -61,6 +57,10 @@ import java.util.List;
     @ManyToOne
     @JoinColumn(name = "managerId")
     private Manager manager;
+
+    @ManyToOne
+    @JoinColumn(name = "departmentId")
+    private Department department;
 
 
 }

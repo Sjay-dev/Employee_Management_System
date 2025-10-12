@@ -58,5 +58,9 @@ public class Manager extends User {
 
     @OneToMany(mappedBy = "manager", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Leave> leaves = new ArrayList<>();
+
+    @ManyToOne
+    @JoinColumn(name = "departmentId")
+    private Department department;
 }
 
