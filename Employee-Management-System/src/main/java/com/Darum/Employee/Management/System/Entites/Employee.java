@@ -1,6 +1,7 @@
 package com.Darum.Employee.Management.System.Entites;
 
 import com.Darum.Employee.Management.System.Entites.Enum.Role;
+import com.Darum.Employee.Management.System.Entites.Enum.Status;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -32,32 +33,27 @@ import java.util.List;
     private String lastName;
 
     @Column(nullable = false)
-    private String password;
-
-    @Column(unique = true, nullable = false)
-    private String email;
-
-    @Column(nullable = false)
     private String phoneNumber;
 
+    @Enumerated(EnumType.STRING)
+    private Status status =  Status.INACTIVE;
 
-    private String department;
     private String position;
+
     private String employmentType;
+
     private String salary;
 
     @Column(nullable = false)
     private LocalDate dateOfBirth;
 
-    private LocalDate hireDate;
     private String address;
 
     @Column(nullable = false)
     private String gender;
 
-    @Builder.Default
-    private Role role = Role.EMPLOYEE;
-
+    @UpdateTimestamp
+    private LocalDateTime updatedAt;
 
     @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Leave> leaves = new ArrayList<>();
@@ -66,11 +62,5 @@ import java.util.List;
     @JoinColumn(name = "managerId")
     private Manager manager;
 
-    @CreationTimestamp
-    private LocalDateTime createdAt;
 
-    @UpdateTimestamp
-    private LocalDateTime updatedAt;
-
-    private String createdBy;
 }

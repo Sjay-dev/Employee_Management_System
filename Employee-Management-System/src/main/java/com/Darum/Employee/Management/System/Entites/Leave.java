@@ -1,5 +1,6 @@
 package com.Darum.Employee.Management.System.Entites;
 
+import com.Darum.Employee.Management.System.Entites.Enum.LeaveStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -28,7 +29,9 @@ public class Leave {
     private LocalDate endDate;
 
     private String reason;
-    private String status;
+
+    @Enumerated(EnumType.STRING)
+    private LeaveStatus status = LeaveStatus.PENDING;
 
     @ManyToOne
     @JoinColumn(name = "employeeId", nullable = false)

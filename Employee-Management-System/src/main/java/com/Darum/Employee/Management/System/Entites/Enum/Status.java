@@ -1,5 +1,5 @@
 package com.Darum.Employee.Management.System.Entites.Enum;
 
-public enum Role {
-    ADMIN, MANAGER, EMPLOYEE
+public enum Status {
+    ACTIVE, INACTIVE,ON_LEAVE
 }
