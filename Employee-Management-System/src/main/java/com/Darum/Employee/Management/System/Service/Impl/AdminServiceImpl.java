@@ -6,6 +6,7 @@ import com.Darum.Employee.Management.System.Service.AdminService;
 import jakarta.transaction.Transactional;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import java.util.List;
 
@@ -19,6 +20,11 @@ public class AdminServiceImpl implements AdminService {
     private final AdminRepository adminRepository;
     private final ManagerRepository managerRepository;
     private final EmployeeRepository employeeRepository;
+    private final UserRepository userRepository;
+    private final DepartmentRepository departmentRepository;
+
+    private final KafkaTemplate<String,Object> kafka;
+    public static final String TOPIC = "Employee.events";
 
     // ------------------ Admin CRUD ------------------
 
@@ -35,18 +41,21 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     public Admin getAdminByEmail(String email) {
-        return adminRepository.findAdminByEmail(email);
+        return adminRepository.findAdminByEmail(email).orElseThrow(() -> new RuntimeException("Admin not found"));
     }
 
     @Override
     public List<Admin> getAdminByName(String name) {
-        return adminRepository.getAdminByName(name);
+        return adminRepository.findAdminByName(name);
     }
 
     @Override
     public List<Admin> getAllAdmins() {
         return adminRepository.findAll();
     }
+
+    @Override
+    public List<User> getAllUsers() {return userRepository.findAll(); }
 
     @Override
     public Admin updateAdmin(Long adminId, Admin adminDetails) {
@@ -95,7 +104,7 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     public Manager getManagerByEmail(String email) {
-        return managerRepository.getManagerByEmail(email);
+        return managerRepository.findManagerByEmail(email).orElseThrow(() -> new RuntimeException("Manager not found"));
     }
 
     @Override
@@ -104,24 +113,61 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
-    public List<Manager> getAllManagersByName(String name) {
-        return managerRepository.getManagerByName(name);
+    public Manager getManagerByDepartmentId(Long departmentId) {
+        return null;
     }
 
     @Override
-    public Manager updateManager(Long managerId, Manager manager) {
-        Manager existingManager = managerRepository.findById(managerId)
-                .orElseThrow(() -> new RuntimeException("Manager not found"));
+    public List<Manager> getAllManagersByName(String name) {
+        return managerRepository.findManagerByName(name);
+    }
 
-        existingManager.setFirstName(manager.getFirstName());
-        existingManager.setLastName(manager.getLastName());
-        existingManager.setEmail(manager.getEmail());
-        existingManager.setDepartment(manager.getDepartment());
-        existingManager.setPassword(manager.getPassword());
-        existingManager.setPhoneNumber(manager.getPhoneNumber());
-        existingManager.setRole(manager.getRole());
-        existingManager.setDepartment(manager.getDepartment());
-        existingManager.setPosition(existingManager.getPosition());
+    @Override
+    public Manager updateManager(Long managerId, Manager managerDetails) {
+        Manager existingManager = managerRepository.findById(managerId)
+                .orElseThrow(() -> new RuntimeException("Manager not found with ID: " + managerId));
+
+        if (managerDetails.getFirstName() != null)
+            existingManager.setFirstName(managerDetails.getFirstName());
+
+        if (managerDetails.getLastName() != null)
+            existingManager.setLastName(managerDetails.getLastName());
+
+        if (managerDetails.getEmail() != null)
+            existingManager.setEmail(managerDetails.getEmail());
+
+        if (managerDetails.getPassword() != null)
+            existingManager.setPassword(managerDetails.getPassword());
+
+        if (managerDetails.getPhoneNumber() != null)
+            existingManager.setPhoneNumber(managerDetails.getPhoneNumber());
+
+        if (managerDetails.getRole() != null)
+            existingManager.setRole(managerDetails.getRole());
+
+        if (managerDetails.getDepartment() != null)
+            existingManager.setDepartment(managerDetails.getDepartment());
+
+        if (managerDetails.getPosition() != null)
+            existingManager.setPosition(managerDetails.getPosition());
+
+        if (managerDetails.getStatus() != null)
+            existingManager.setStatus(managerDetails.getStatus());
+
+        if (managerDetails.getEmploymentDate() != null)
+            existingManager.setEmploymentDate(managerDetails.getEmploymentDate());
+
+        if (managerDetails.getEmploymentType() != null)
+            existingManager.setEmploymentType(managerDetails.getEmploymentType());
+
+        if (managerDetails.getSalary() != null)
+            existingManager.setSalary(managerDetails.getSalary());
+
+        if (managerDetails.getAddress() != null)
+            existingManager.setAddress(managerDetails.getAddress());
+
+        if (managerDetails.getGender() != null)
+            existingManager.setGender(managerDetails.getGender());
 
         return managerRepository.save(existingManager);
     }
@@ -149,7 +195,7 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     public Employee getEmployeeByEmail(String email) {
-        return employeeRepository.getEmployeeByEmail(email);
+        return employeeRepository.findEmployeeByEmail(email).orElseThrow(() -> new RuntimeException("Employee not found"));
     }
 
     @Override
@@ -159,30 +205,62 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     public List<Employee> getAllEmployeesByName(String name) {
-        return employeeRepository.getEmployeeByName(name);
+        return employeeRepository.findEmployeeByName(name);
     }
 
     @Override
-    public Employee updateEmployee(Long employeeId, Employee employee) {
+    public List<Employee> getAllEmployeesByDepartmentId(Long departmentId) {
+        return List.of();
+    }
+
+    @Override
+    public List<Employee> getAllEmployeesByManagerId(Long managerId) {
+        return List.of();
+    }
+
+    @Override
+    public Employee updateEmployee(Long employeeId, Employee employeeDetails) {
         Employee existingEmployee = employeeRepository.findById(employeeId)
-                .orElseThrow(() -> new RuntimeException("Employee not found"));
+                .orElseThrow(() -> new RuntimeException("Employee not found with ID: " + employeeId));
 
-        existingEmployee.setFirstName(employee.getFirstName());
-        existingEmployee.setLastName(employee.getLastName());
-        existingEmployee.setEmail(employee.getEmail());
-        existingEmployee.setPhoneNumber(employee.getPhoneNumber());
-        existingEmployee.setDepartment(employee.getDepartment());
-        existingEmployee.setPhoneNumber(employee.getPhoneNumber());
-        existingEmployee.setPosition(employee.getPosition());
-        existingEmployee.setEmploymentType(employee.getEmploymentType());
-        existingEmployee.setSalary(employee.getSalary());
-        existingEmployee.setDateOfBirth(employee.getDateOfBirth());
-        existingEmployee.setAddress(employee.getAddress());
-        existingEmployee.setRole(employee.getRole());
-        existingEmployee.setHireDate(employee.getHireDate());
-        existingEmployee.setGender(employee.getGender());
-        existingEmployee.setPassword(employee.getPassword());
+        if (employeeDetails.getFirstName() != null)
+            existingEmployee.setFirstName(employeeDetails.getFirstName());
 
+        if (employeeDetails.getLastName() != null)
+            existingEmployee.setLastName(employeeDetails.getLastName());
+
+        if (employeeDetails.getEmail() != null)
+            existingEmployee.setEmail(employeeDetails.getEmail());
+
+        if (employeeDetails.getPhoneNumber() != null)
+            existingEmployee.setPhoneNumber(employeeDetails.getPhoneNumber());
+
+        if (employeeDetails.getDepartment() != null)
+            existingEmployee.setDepartment(employeeDetails.getDepartment());
+
+        if (employeeDetails.getPosition() != null)
+            existingEmployee.setPosition(employeeDetails.getPosition());
+
+        if (employeeDetails.getEmploymentType() != null)
+            existingEmployee.setEmploymentType(employeeDetails.getEmploymentType());
+
+        if (employeeDetails.getSalary() != null)
+            existingEmployee.setSalary(employeeDetails.getSalary());
+
+        if (employeeDetails.getDateOfBirth() != null)
+            existingEmployee.setDateOfBirth(employeeDetails.getDateOfBirth());
+
+        if (employeeDetails.getAddress() != null)
+            existingEmployee.setAddress(employeeDetails.getAddress());
+
+        if (employeeDetails.getRole() != null)
+            existingEmployee.setRole(employeeDetails.getRole());
+
+        if (employeeDetails.getGender() != null)
+            existingEmployee.setGender(employeeDetails.getGender());
+
+        if (employeeDetails.getPassword() != null)
+            existingEmployee.setPassword(employeeDetails.getPassword());
 
         return employeeRepository.save(existingEmployee);
     }
@@ -194,5 +272,49 @@ public class AdminServiceImpl implements AdminService {
         }
         employeeRepository.deleteById(employeeId);
     }
+
+    @Override
+    public Department addDepartment(Department department) {
+        return departmentRepository.save(department) ;
+    }
+
+    @Override
+    public Department getDepartmentById(Long departmentId) {
+        return departmentRepository.findById(departmentId).orElseThrow(() -> new RuntimeException("Department not found"));
+    }
+
+    @Override
+    public List<Department> getAllDepartments() {
+        return departmentRepository.findAll();
+    }
+
+    @Override
+    public List<Department> getAllDepartmentsByName(String name) {
+        return departmentRepository.findDepartmentByByName(name);
+    }
+
+    @Override
+    public Department updateDepartmentDetails(Long departmentId, Department department) {
+
+        Department existingDepartment = departmentRepository.findById(departmentId)
+                .orElseThrow(() -> new RuntimeException("Department not found with ID: " + departmentId));
+
+        if (department.getName() != null)
+            existingDepartment.setName(department.getName());
+
+        if (department.getDescription() != null)
+            existingDepartment.setDescription(department.getDescription());
+
+        return departmentRepository.save(existingDepartment);
+
+
+    }
+
+    @Override
+    public void deleteDepartment(Long departmentId) {
+        if (!departmentRepository.existsById(departmentId)) {
+            throw new RuntimeException("Department not found");
+        }
+        departmentRepository.deleteById(departmentId);    }
 }
 

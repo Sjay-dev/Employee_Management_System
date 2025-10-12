@@ -18,4 +18,6 @@ public interface ManagerRepository extends JpaRepository<Manager,Long> {
 
         Optional<Manager> findManagerByDepartment_DepartmentId (Long departmentId);
 
+        Optional<Manager> findManagerByEmail (String email);
+
 }

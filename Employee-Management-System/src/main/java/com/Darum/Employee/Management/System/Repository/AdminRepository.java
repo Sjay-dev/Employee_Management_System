@@ -16,4 +16,6 @@ public interface AdminRepository extends JpaRepository<Admin, Long> {
             "OR LOWER(a.lastName) LIKE LOWER(CONCAT('%', :name, '%'))")
      public List<Admin> findAdminByName(String name);
 
+    public Optional<Admin> findAdminByEmail(String email);
+
 }

@@ -1,8 +1,5 @@
 package com.Darum.Employee.Management.System.Event;
 
-import com.Darum.Employee.Management.System.Entites.Department;
-import com.Darum.Employee.Management.System.Entites.Employee;
-import com.Darum.Employee.Management.System.Entites.Leave;
 import com.Darum.Employee.Management.System.Event.Enum.Event;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
