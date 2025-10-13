@@ -24,7 +24,4 @@ public interface ManagerService {
 
     public void deleteManager(Long managerId);
 
-
-
-
 }

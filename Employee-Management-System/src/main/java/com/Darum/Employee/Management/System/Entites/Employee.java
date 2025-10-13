@@ -18,8 +18,6 @@ import java.util.List;
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
-@Builder
     public class Employee extends User {
 
     @Column(nullable = false)

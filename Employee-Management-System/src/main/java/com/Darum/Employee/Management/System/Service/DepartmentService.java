@@ -1,7 +1,6 @@
 package com.Darum.Employee.Management.System.Service;
 
 import com.Darum.Employee.Management.System.Entites.Department;
-import org.springframework.stereotype.Service;
 
 import java.util.List;
 

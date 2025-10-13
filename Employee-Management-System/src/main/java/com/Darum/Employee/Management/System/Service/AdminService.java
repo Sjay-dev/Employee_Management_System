@@ -1,7 +1,6 @@
 package com.Darum.Employee.Management.System.Service;
 
 import com.Darum.Employee.Management.System.Entites.*;
-import org.springframework.stereotype.Service;
 
 import java.util.List;
 
@@ -23,9 +22,5 @@ public interface AdminService {
     public Admin updateAdmin(Long adminId , Admin admin);
 
     public void deleteAdmin(Long adminId);
-
-
-
-
 
 }
