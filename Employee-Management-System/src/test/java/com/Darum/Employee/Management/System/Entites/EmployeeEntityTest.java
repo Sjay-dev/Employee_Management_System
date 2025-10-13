@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 public class EmployeeEntityTest {
+
     @Test
     void testEmployeeDefaultsAndRelations() {
         Employee emp = new Employee();
@@ -20,8 +21,17 @@ public class EmployeeEntityTest {
         emp.setDateOfBirth(LocalDate.of(1998, 3, 12));
         emp.setGender("Male");
 
+        // Verify default status and fields
         assertEquals(Status.INACTIVE, emp.getStatus());
         assertEquals("John", emp.getFirstName());
+        assertEquals("Smith", emp.getLastName());
+        assertEquals("john@mail.com", emp.getEmail());
+        assertEquals("secret", emp.getPassword());
+        assertEquals("09012345678", emp.getPhoneNumber());
+        assertEquals(LocalDate.of(1998, 3, 12), emp.getDateOfBirth());
+        assertEquals("Male", emp.getGender());
+
+        // Verify default relationships are null
         assertNull(emp.getDepartment());
         assertNull(emp.getManager());
     }

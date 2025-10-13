@@ -21,38 +21,57 @@ public class EmployeeServiceImplTest {
 
     @Mock
     private EmployeeRepository employeeRepository;
-    @Mock private KafkaTemplate<String, Object> kafka;
+
+    @Mock
+    private KafkaTemplate<String, Object> kafka;
 
     @InjectMocks
     private EmployeeServiceImpl employeeService;
 
+    /**
+     * Test adding a new employee.
+     * Verifies that the employee is saved, and a Kafka CREATE event is sent.
+     */
     @Test
     void testAddEmployee() {
         Employee emp = new Employee();
         emp.setFirstName("John");
-        emp.setDateOfBirth(LocalDate.of(1990,1,1));
+        emp.setDateOfBirth(LocalDate.of(1990, 1, 1));
 
         when(employeeRepository.save(emp)).thenReturn(emp);
 
         Employee saved = employeeService.addEmployee(emp);
+
+        // Verify employee fields
         assertEquals("John", saved.getFirstName());
 
-        verify(employeeRepository, times(2)).save(emp); // Called twice in addEmployee
+        // Verify repository save and Kafka event are called once
+        verify(employeeRepository, times(1)).save(emp);
         verify(kafka, times(1)).send(eq("Employee.events"), any());
     }
 
+    /**
+     * Test deleting an employee.
+     * Verifies that the employee is deleted and a Kafka DELETE event is sent.
+     */
     @Test
     void testDeleteEmployee() {
         Employee emp = new Employee();
         emp.setUserId(1L);
 
         when(employeeRepository.findById(1L)).thenReturn(Optional.of(emp));
+
         employeeService.deleteEmployee(1L);
 
         verify(employeeRepository, times(1)).delete(emp);
         verify(kafka, times(1)).send(eq("Employee.events"), any());
     }
 
+    /**
+     * Test updating an employee.
+     * Verifies that only updated fields are changed, repository save is called,
+     * and a Kafka UPDATE event is sent.
+     */
     @Test
     void testUpdateEmployee() {
         Employee existing = new Employee();
@@ -66,7 +85,12 @@ public class EmployeeServiceImplTest {
         when(employeeRepository.save(existing)).thenReturn(existing);
 
         Employee updated = employeeService.updateEmployee(1L, updates);
+
+        // Verify updated field
         assertEquals("New", updated.getFirstName());
+
+        // Verify Kafka UPDATE event sent
         verify(kafka, times(1)).send(eq("Employee.events"), any());
     }
 }
+

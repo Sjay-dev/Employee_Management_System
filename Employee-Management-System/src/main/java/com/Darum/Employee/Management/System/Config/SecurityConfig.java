@@ -25,44 +25,52 @@ public class SecurityConfig {
 
     private final JwtTokenFilter jwtTokenFilter;
 
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(AbstractHttpConfigurer::disable)
+                .csrf(AbstractHttpConfigurer::disable) // Disable CSRF for APIs
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/api/manager/**").hasAnyRole("MANAGER", "ADMIN")
-                        .requestMatchers("/api/employee/**").hasAnyRole("EMPLOYEE", "MANAGER", "ADMIN")
-                        .anyRequest().authenticated()
+                        .requestMatchers("/api/auth/**").permitAll() // Public endpoints
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN") // Admin-only endpoints
+                        .requestMatchers("/api/manager/**").hasAnyRole("MANAGER", "ADMIN") // Manager or Admin
+                        .requestMatchers("/api/employee/**").hasAnyRole("EMPLOYEE", "MANAGER", "ADMIN") // Employee, Manager, Admin
+                        .anyRequest().authenticated() // All other requests require authentication
                 )
-                .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .httpBasic(AbstractHttpConfigurer::disable);
+                .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class) // Add JWT filter
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Stateless sessions
+                .httpBasic(AbstractHttpConfigurer::disable); // Disable default HTTP Basic auth
 
         return http.build();
     }
 
+    /**
+     * Seeds initial data (admin user) when the application starts
+     */
     @Bean
     public CommandLineRunner dataSeeder(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         return args -> {
-            if (userRepository.count() == 0) {
+            if (userRepository.count() == 0) { // Only seed if no users exist
                 Admin admin = new Admin();
                 admin.setFirstName("Super");
                 admin.setLastName("Admin");
                 admin.setEmail("admin@darum.com");
                 admin.setPhoneNumber("000000000");
-                admin.setPassword(passwordEncoder.encode("ChangeMe123!"));
-                admin.setRole(Role.ADMIN);
-                userRepository.save(admin);
+                admin.setPassword(passwordEncoder.encode("ChangeMe123!")); // Encode password
+                admin.setRole(Role.ADMIN); // Set role to ADMIN
+                userRepository.save(admin); // Save admin to database
             }
         };
     }
 
+    /**
+     * Password encoder for hashing passwords
+     */
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
+        return new BCryptPasswordEncoder(); // Use BCrypt hashing algorithm
     }
 }
+
 
 

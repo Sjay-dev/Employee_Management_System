@@ -12,11 +12,12 @@ import java.util.Optional;
 @Repository
 public interface ManagerRepository extends JpaRepository<Manager,Long> {
 
+    //Search(name)
     @Query("SELECT m FROM Manager m WHERE LOWER(m.firstName) LIKE LOWER(CONCAT('%', :name, '%')) " +
             "OR LOWER(m.lastName) LIKE LOWER(CONCAT('%', :name, '%'))")
         public List<Manager> findManagerByName(String name);
 
 
-        Optional<Manager> findManagerByEmail (String email);
+        public Optional<Manager> findManagerByEmail (String email);
 
 }

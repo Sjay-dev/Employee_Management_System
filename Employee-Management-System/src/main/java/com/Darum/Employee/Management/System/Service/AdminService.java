@@ -17,7 +17,6 @@ public interface AdminService {
 
     public List<Admin> getAllAdmins();
 
-    public List<User> getAllUsers();
 
     public Admin updateAdmin(Long adminId , Admin admin);
 

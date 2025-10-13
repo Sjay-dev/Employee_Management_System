@@ -10,6 +10,7 @@ import java.util.List;
 @Repository
 public interface DepartmentRepository extends JpaRepository<Department, Long> {
 
+    //Search(name)
     @Query("SELECT d FROM Department d WHERE LOWER(d.name) LIKE LOWER(CONCAT('%', :name, '%')) ")
     public List<Department> findDepartmentByByName(String name);
 }

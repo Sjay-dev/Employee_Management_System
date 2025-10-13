@@ -32,6 +32,10 @@ public class ManagerServiceImplTest {
     @InjectMocks
     private ManagerServiceImpl managerService;
 
+    /**
+     * Test adding a new manager.
+     * Verifies that the manager is saved and returned correctly.
+     */
     @Test
     void testAddManager() {
         Manager m = new Manager();
@@ -39,9 +43,15 @@ public class ManagerServiceImplTest {
 
         when(managerRepository.save(m)).thenReturn(m);
         Manager saved = managerService.addManager(m);
+
         assertEquals("Jane", saved.getFirstName());
+        verify(managerRepository, times(1)).save(m);
     }
 
+    /**
+     * Test updating an existing manager.
+     * Ensures that only updated fields are changed and saved.
+     */
     @Test
     void testUpdateManager() {
         Manager existing = new Manager();
@@ -55,22 +65,39 @@ public class ManagerServiceImplTest {
         when(managerRepository.save(existing)).thenReturn(existing);
 
         Manager updated = managerService.updateManager(1L, updates);
+
         assertEquals("New", updated.getFirstName());
+        verify(managerRepository, times(1)).save(existing);
     }
 
+    /**
+     * Test deleting a manager that exists.
+     * Verifies repository deleteById is called once.
+     */
     @Test
     void testDeleteManager() {
         when(managerRepository.existsById(1L)).thenReturn(true);
+
         managerService.deleteManager(1L);
+
         verify(managerRepository, times(1)).deleteById(1L);
     }
 
+    /**
+     * Test deleting a manager that does not exist.
+     * Expects a RuntimeException to be thrown.
+     */
     @Test
     void testDeleteManager_NotFound() {
         when(managerRepository.existsById(1L)).thenReturn(false);
+
         assertThrows(RuntimeException.class, () -> managerService.deleteManager(1L));
     }
 
+    /**
+     * Test handling a Kafka CREATE event for an employee.
+     * Verifies that the employee is added to the department and saved.
+     */
     @Test
     void testConsumeEmployeeCreateEvent_AddsEmployeeToDepartment() {
         Department dept = new Department();
@@ -91,6 +118,10 @@ public class ManagerServiceImplTest {
         assert(dept.getEmployees().contains(emp));
     }
 
+    /**
+     * Test handling a Kafka DELETE event for an employee.
+     * Verifies that the employee is removed from the department and saved.
+     */
     @Test
     void testConsumeEmployeeDeleteEvent_RemovesEmployeeFromDepartment() {
         Employee emp = new Employee();
@@ -111,6 +142,10 @@ public class ManagerServiceImplTest {
         assert(dept.getEmployees().isEmpty());
     }
 
+    /**
+     * Test handling a Kafka UPDATE event for an employee.
+     * Ensures no repository interaction occurs if the employee has no department.
+     */
     @Test
     void testConsumeEmployeeUpdateEvent_LogsUpdateOnly() {
         Employee emp = new Employee();
@@ -118,7 +153,9 @@ public class ManagerServiceImplTest {
         emp.setDepartment(null);
 
         managerService.consumeEmployeeEvent(new KafkaEvent<>(Event.UPDATE, emp));
+
+        // No save or find should be called
         verifyNoInteractions(departmentRepository);
     }
-
 }
+

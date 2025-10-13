@@ -29,18 +29,27 @@ public class DepartmentServiceImplTest {
     @InjectMocks
     private DepartmentImpl departmentService;
 
+    /**
+     * Test adding a new department.
+     * Verifies that the department is saved and the repository save method is called once.
+     */
     @Test
     void testAddDepartment() {
         Department dept = new Department();
         dept.setName("IT");
 
         when(departmentRepository.save(dept)).thenReturn(dept);
+
         Department saved = departmentService.addDepartment(dept);
 
         assertEquals("IT", saved.getName());
         verify(departmentRepository, times(1)).save(dept);
     }
 
+    /**
+     * Test updating an existing department's details.
+     * Ensures that only updated fields are changed and save is called.
+     */
     @Test
     void testUpdateDepartment() {
         Department existing = new Department();
@@ -54,9 +63,14 @@ public class DepartmentServiceImplTest {
         when(departmentRepository.save(existing)).thenReturn(existing);
 
         Department updated = departmentService.updateDepartmentDetails(1L, updates);
+
         assertEquals("NewName", updated.getName());
     }
 
+    /**
+     * Test deleting an existing department.
+     * Verifies that deleteById is called once when department exists.
+     */
     @Test
     void testDeleteDepartment() {
         when(departmentRepository.existsById(1L)).thenReturn(true);
@@ -64,13 +78,20 @@ public class DepartmentServiceImplTest {
         verify(departmentRepository, times(1)).deleteById(1L);
     }
 
+    /**
+     * Test deleting a department that does not exist.
+     * Should throw a RuntimeException (or ResponseStatusException in actual service).
+     */
     @Test
     void testDeleteDepartment_NotFound() {
         when(departmentRepository.existsById(1L)).thenReturn(false);
         assertThrows(RuntimeException.class, () -> departmentService.deleteDepartment(1L));
     }
 
-
+    /**
+     * Test Kafka CREATE event for an employee.
+     * Verifies that the employee is added to the department's employee list and saved.
+     */
     @Test
     void testConsumeEmployeeCreateEvent_AddsEmployeeToDepartment() {
         Department dept = new Department();
@@ -91,6 +112,10 @@ public class DepartmentServiceImplTest {
         assert(dept.getEmployees().contains(emp));
     }
 
+    /**
+     * Test Kafka DELETE event for an employee.
+     * Verifies that the employee is removed from the department's employee list and saved.
+     */
     @Test
     void testConsumeEmployeeDeleteEvent_RemovesEmployeeFromDepartment() {
         Employee emp = new Employee();
@@ -111,6 +136,11 @@ public class DepartmentServiceImplTest {
         assert(dept.getEmployees().isEmpty());
     }
 
+    /**
+     * Test Kafka UPDATE event for an employee.
+     * Currently, the method logs or ignores updates if department is null.
+     * Ensures no exceptions are thrown for such events.
+     */
     @Test
     void testConsumeEmployeeUpdateEvent_LogsUpdate() {
         Employee emp = new Employee();
@@ -119,5 +149,5 @@ public class DepartmentServiceImplTest {
 
         departmentService.consumeEmployeeEvent(new KafkaEvent<>(Event.UPDATE, emp));
     }
-
 }
+

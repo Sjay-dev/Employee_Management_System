@@ -12,5 +12,7 @@ import lombok.Setter;
 @AllArgsConstructor
 public class KafkaEvent<T> {
     private Event action;
+
+    // Payload of the event (Employee, Department.)
     private T payload;
 }
