@@ -1,5 +1,6 @@
 package com.Darum.Employee.Management.System.Controller;
 
+import com.Darum.Employee.Management.System.Entites.Admin;
 import com.Darum.Employee.Management.System.Entites.Enum.Role;
 import com.Darum.Employee.Management.System.Entites.User;
 import com.Darum.Employee.Management.System.Repository.UserRepository;
@@ -17,6 +18,8 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.mockito.Mockito.when;
@@ -44,22 +47,22 @@ public class AuthControllerTest {
     void testLoginSuccess() throws Exception {
         mockMvc = MockMvcBuilders.standaloneSetup(authController).build();
 
-        User user = new User() {{
-            setEmail("test@example.com");
-            setPassword("encodedPass");
-            setRole(Role.ADMIN);
-        }};
+        Admin user = new Admin();
+        user.setEmail("test@example.com");
+        user.setPassword("encodedPass");
+        user.setRole(Role.ADMIN);
 
         when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(user));
         when(passwordEncoder.matches("rawPass", "encodedPass")).thenReturn(true);
         when(jwtToken.generateToken("test@example.com", "ADMIN")).thenReturn("fake-jwt");
 
+        Map<String, String> loginRequest = new HashMap<>();
+        loginRequest.put("email", "test@example.com");
+        loginRequest.put("password", "rawPass");
+
         mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(new Object() {{
-                            put("email", "test@example.com");
-                            put("password", "rawPass");
-                        }})))
+                        .content(objectMapper.writeValueAsString(loginRequest)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.token").value("fake-jwt"))
                 .andExpect(jsonPath("$.role").value("ADMIN"));
@@ -69,21 +72,21 @@ public class AuthControllerTest {
     void testLoginInvalidPassword() throws Exception {
         mockMvc = MockMvcBuilders.standaloneSetup(authController).build();
 
-        User user = new User() {{
-            setEmail("test@example.com");
-            setPassword("encodedPass");
-            setRole(Role.ADMIN);
-        }};
+        Admin user = new Admin();
+        user.setEmail("test@example.com");
+        user.setPassword("encodedPass");
+        user.setRole(Role.ADMIN);
 
         when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(user));
         when(passwordEncoder.matches("wrongPass", "encodedPass")).thenReturn(false);
 
+        Map<String, String> loginRequest = new HashMap<>();
+        loginRequest.put("email", "test@example.com");
+        loginRequest.put("password", "wrongPass");
+
         mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(new Object() {{
-                            put("email", "test@example.com");
-                            put("password", "wrongPass");
-                        }})))
+                        .content(objectMapper.writeValueAsString(loginRequest)))
                 .andExpect(status().isInternalServerError()); // RuntimeException -> 500
     }
 }
