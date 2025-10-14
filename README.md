@@ -3,55 +3,54 @@
 ## 📘 Overview
 The **Employee Management System** is a **Spring Boot–based application** designed to manage employee data, departments, and hierarchical relationships between **administrators, managers, and employees**.
 
-It includes:  
+Features include:  
 - **Role-based authentication** using JWT tokens  
 - **CRUD operations** for employees, managers, and departments  
 - **Kafka-based asynchronous messaging** for scalability  
 - **PostgreSQL database integration**  
 - **Swagger UI** for API documentation  
-- **GitHub Actions workflow** for automated CI/CD builds  
+- **GitHub Actions workflow** for automated CI/CD  
 
-This project follows a **clean modular architecture**, with clearly separated **services, repositories, and entities**.
+The project follows a **clean modular architecture**, with clearly separated **services, repositories, and entities**.
 
 ---
 
 ## 🛠️ Technologies Used
 
-| Category | Technology |
-|----------|-----------|
-| Backend Framework | Spring Boot |
-| Security | Spring Security + JWT |
-| Database | PostgreSQL |
-| ORM | Hibernate / JPA |
-| Messaging | Apache Kafka |
-| Testing | JUnit, Mockito , Spring Boot Test |
-| API Docs | Swagger / Springdoc OpenAPI |
-| Build Tool | Maven |
-| CI/CD | GitHub Actions |
-| Version Control | Git & GitHub |
+| Category        | Technology                        |
+|-----------------|----------------------------------|
+| Backend Framework | Spring Boot                     |
+| Security        | Spring Security + JWT            |
+| Database        | PostgreSQL                        |
+| ORM             | Hibernate / JPA                   |
+| Messaging       | Apache Kafka                      |
+| Testing         | JUnit, Mockito, Spring Boot Test  |
+| API Docs        | Swagger / Springdoc OpenAPI       |
+| Build Tool      | Maven                             |
+| CI/CD           | GitHub Actions                    |
+| Version Control | Git & GitHub                      |
 
 ---
 
 ## ⚙️ Setup Instructions
 
-### 1 Clone the Repository
+### 1. Clone the Repository
+```bash
+git clone <repository-url>
+cd <repository-folder>
+```
 
+### 2. Set Up Your Database and Docker
+Update your PostgreSQL credentials in `application.properties`, `application.yml`
 
-### 2 Set Up Your DataBase and Docker
-
- Add the variables in the apllication.properties, application.yml
-  and docker-compose.yml
-
-Update  your local PostgreSQL credentials, for example:
-
+```env
 POSTGRES_USER=postgres
 POSTGRES_PASSWORD=yourpassword
 POSTGRES_DB=employeedb
+```
 
-🗄️ Database Configuration
-
-
-Example application.yml:
+Example `application.yml`:
+```yaml
 spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/employeedb
@@ -66,130 +65,162 @@ spring:
     properties:
       hibernate:
         format_sql: true
+```
 
-        
 ### 3. Run Docker (Zookeeper and Kafka)
-    To ensure Kafka can send and receive messages properly
-      Note: Employee Services won't work without it
-
-    To run Docker
-    Use the this command promt -> docker-compose up -d
-
-    Verify that the containers(Zookeeper and Kafka) are running -> docker ps 
+To ensure Kafka can send and receive messages properly:  
+```bash
+docker-compose up -d
+docker ps   # Verify Zookeeper and Kafka containers are running
+```
 
 ### 4. Run the Application
+```bash
+mvn spring-boot:run
+```
 
-    mvn spring-boot:run
+---
+
+## 🔑 Default Admin Login
+POST: `http://localhost:8080/api/auth/login`  
+
+```json
+{
+  "email": "admin@darum.com",
+  "password": "ChangeMe123!"
+}
+```
+
+---
+
+## 🏢 Department, Manager, and Employee Operations
+
+### Create Department (Admin only)
+POST: `http://localhost:8080/api/admin/departments`  
+```json
+{
+  "name": "Engineering",
+  "description": "Handles software development and IT projects"
+}
+```
+
+### Create Manager (Admin only)
+POST: `http://localhost:8080/api/admin/managers`  
+```json
+{
+  "firstName": "Alice",
+  "lastName": "Johnson",
+  "email": "alice.johnson@example.com",
+  "password": "SecurePass123!",
+  "phoneNumber": "08012345678",
+  "dateOfBirth": "1985-03-15",
+  "gender": "FEMALE",
+  "position": "Team Lead",
+  "employmentDate": "2023-01-10",
+  "employmentType": "Full-time",
+  "salary": "120000"
+}
+```
+
+### Create Employee (Admin only)
+POST: `http://localhost:8080/api/admin/employees`  
+```json
+{
+  "firstName": "Bob",
+  "lastName": "Smith",
+  "email": "bob.smith@example.com",
+  "password": "EmployeePass123!",
+  "phoneNumber": "08087654321",
+  "dateOfBirth": "1990-06-20",
+  "gender": "MALE",
+  "position": "Software Developer",
+  "employmentType": "Full-time",
+  "salary": "80000"
+}
+```
+
+### Assign Manager to Department (Admin only)
+POST: `http://localhost:8080/api/admin/departments/{departmentID}/managers/{managerID}`
+
+### Assign Employee to Department (Admin only)
+POST: `http://localhost:8080/api/admin/departments/{departmentID}/employees/{employeeID}`
+
+---
+
+## 👤 Get Profiles
+
+### Manager Profile
+- Admin: `GET /api/admin/managers/{managerID}`
+
+###  get Employees in Department
+- Admin: `GET /api/manager/department/employees`
 
 
+### Employee Profile
+- Admin: `GET /api/admin/employees/{employeeID}`
+- Employee: `GET /api/employee/me`
 
+---
 
+## 🔐 Security & Authentication
+- JWT-based authentication via `SecurityConfig.java`
+- Endpoints are protected based on user roles:
 
-### 🔐 Security & Authentication
+| Role     | Access                                 |
+|----------|---------------------------------------|
+| ADMIN    | Full access to all endpoints           |
+| MANAGER  | View employees in their department    |
+| EMPLOYEE | View their own details only            |
 
-The application uses JWT-based authentication via SecurityConfig.java.
-Endpoints are protected based on user roles:
-
-Role	Access
-ADMIN	Full access to all endpoints
-MANAGER	Can view employees in his department
-EMPLOYEE	Can view his/her details only
-
-JWT tokens are required for secured endpoints.
-After login, include the token in your request header:
-
+Include JWT token in requests:
+```
 Authorization: Bearer <token>
+```
 
-🧩 Swagger API Documentation
+---
 
-After running the application, open:
+## 📄 Swagger API Documentation
+Open after running the app:  
+[http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html)  
 
-http://localhost:8080/swagger-ui/index.html
+Authorize Swagger with a valid JWT token to access protected endpoints.
 
+---
 
-🔐 To access protected endpoints (like viewing profiles), you’ll need to authorize Swagger with a valid JWT token.
+## 💡 Implementation Tips
+1. **Assign Manager Before Employees**  
+   Employees require a manager in their department; otherwise, they remain unassigned.
 
-🧠 Important Implementation Tips
+2. **Auto-Manager Assignment**  
+   When a new manager is added, existing unassigned employees in the department are linked automatically.
 
-💡 1. Assign Manager Before Employees
-
-Always add a manager to a department before adding employees.
-When you create an employee, the system checks if their department already has a manager.
-If a manager exists, they are automatically linked to the employee.
-Otherwise, the employee’s manager field will remain null.
-
-💡 2. Auto-Manager Assignment
-
-When a new manager is added to a department, all existing employees in that department without a manager are automatically updated to reference the new manager.
-
-💡 3. Testing Controller Logic
-
-Unit tests are written for all controllers and services using JUnit and Spring Boot Test.
-To run tests locally:
-
+3. **Testing**  
+```bash
 mvn test
+```
+   Unit tests automatically spin up an in-memory PostgreSQL container.
 
+4. **CI/CD Integration**  
+   Every push or PR triggers:
+   - Maven build & tests
+   - Logs visible under GitHub Actions tab
 
-Tests automatically spin up an in-memory PostgreSQL container using GitHub Actions CI workflow.
+---
 
-💡 4. CI/CD Integration
+## ⚠️ Important Notes
+- Kafka must be running for employee CRUD operations.
+- Default Admin:
+  - Email: `admin@darum.com`
+  - Password: `ChangeMe123!`
+- Default ports:  
+  - App: 8080  
+  - Kafka: 9092  
+  - Zookeeper: 2181  
+  - PostgreSQL: 5432
+```
 
-Every push or pull request to main triggers:
+---
 
-Database via GitHub Actions
+If you want, I can also **add a table of example API endpoints with their methods and required roles**, which makes it very easy for developers to quickly reference the API.  
 
-Maven build and tests
-
-Workflow logs visible under the Actions tab on GitHub
-
-🧪 Running Tests Locally
-
-Run:
-
-mvn clean test
-
-
-This ensures:
-
-Entities map correctly to tables
-
-Controller endpoints respond correctly
-
-Security filters and JWT validation work as expected
-
-🚀 CI/CD with GitHub Actions
-
-Your workflow file: .github/workflows/maven.yml
-Automatically does the following:
-
-Builds your project using Maven
-
-Runs all tests automatically
-
-Ensures build consistency on all PRs and pushes
-
-You can view results under the Actions tab in your GitHub repo.
-
-🧰 Developer Notes & Tips
-
-Default Admin is created automatically on startup:
-
-Email: admin@darum.com
-Password: ChangeMe123!
-
-
-Default port: 8080
-
-Kafka: localhost:9092
-
-Zookeeper: localhost:2181
-
-PostgreSQL: localhost:5432
-
-⚠️ Kafka must be running before performing employee CRUD operations.
-This is because every create, update, or delete operation on an employee is sent as a Kafka event to notify other services asynchronously.
-If Kafka is down, the system cannot dispatch these events, which may cause the operation to fail or the employee data to not be fully propagated to other dependent services.
-
-Manager assignment tip: Always add managers to a department before adding employees. Employees without a department manager will remain unassigned until a manager is added.
-
-Testing: Use mvn test to run unit and integration tests locally.
+Do you want me to do that?
