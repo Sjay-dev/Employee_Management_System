@@ -1,4 +1,4 @@
-name: Java CI with Maven
+name: Java CI with Maven (H2 DB)
 
 on:
   push:
@@ -28,21 +28,14 @@ jobs:
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-maven
 
-      - name: Install PostgreSQL
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y postgresql postgresql-contrib
-          sudo service postgresql start
-          # Create user and database for your tests
-          sudo -u postgres psql -c "CREATE USER github WITH PASSWORD 'password';"
-          sudo -u postgres psql -c "CREATE DATABASE employeedb OWNER github;"
-
       - name: Build and Run Tests
         run: mvn clean test -B
         env:
-          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/employeedb
-          SPRING_DATASOURCE_USERNAME: github
-          SPRING_DATASOURCE_PASSWORD: password
+          # Configure H2 in-memory database for your Spring or JDBC tests
+          SPRING_DATASOURCE_URL: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1
+          SPRING_DATASOURCE_USERNAME: sa
+          SPRING_DATASOURCE_PASSWORD: 
+          SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.h2.Driver
 
       - name: Show Maven test results
         run: cat target/surefire-reports/*.txt || true
