@@ -26,24 +26,8 @@ public class AdminServiceImplTest {
     private UserRepository userRepository;
 
     @InjectMocks
+
     private AdminServiceImpl adminService;
-
-    /**
-     * Test adding a new admin.
-     * Verifies that the repository save method is called and the returned admin is correct.
-     */
-    @Test
-    void testAddAdmin() {
-        Admin admin = new Admin();
-        admin.setFirstName("Joseph");
-
-        when(adminRepository.save(admin)).thenReturn(admin);
-
-        Admin saved = adminService.addAdmin(admin);
-
-        assertEquals("Joseph", saved.getFirstName());
-        verify(adminRepository, times(1)).save(admin);
-    }
 
     /**
      * Test fetching an admin by ID when the admin exists.

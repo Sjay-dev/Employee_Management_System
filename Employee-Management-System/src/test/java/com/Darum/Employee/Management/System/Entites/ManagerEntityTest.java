@@ -35,7 +35,7 @@ public class ManagerEntityTest {
         assertEquals("Female", manager.getGender());
 
         // Verify list initialization
-        assertNotNull(manager.getEmployees());
-        assertTrue(manager.getEmployees().isEmpty());
+        assertNotNull(manager.getEmployeeNames());
+        assertTrue(manager.getEmployeeNames().isEmpty());
     }
 }
