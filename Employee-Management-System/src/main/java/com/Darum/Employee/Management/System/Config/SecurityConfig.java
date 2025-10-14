@@ -35,6 +35,11 @@ public class SecurityConfig {
                         .requestMatchers("/api/admin/**").hasRole("ADMIN") // Admin-only endpoints
                         .requestMatchers("/api/manager/**").hasAnyRole("MANAGER", "ADMIN") // Manager or Admin
                         .requestMatchers("/api/employee/**").hasAnyRole("EMPLOYEE", "MANAGER", "ADMIN") // Employee, Manager, Admin
+                        .requestMatchers(
+                                "/v3/api-docs/**",
+                                "/swagger-ui.html",
+                                "/swagger-ui/**"
+                        ).permitAll()// Swagger endpoints
                         .anyRequest().authenticated() // All other requests require authentication
                 )
                 .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class) // Add JWT filter

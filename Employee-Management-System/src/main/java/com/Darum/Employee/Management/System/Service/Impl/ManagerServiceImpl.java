@@ -15,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -27,6 +28,9 @@ public class ManagerServiceImpl implements ManagerService {
 
     private final ManagerRepository managerRepository;
     private final DepartmentRepository departmentRepository;
+    private final EmployeeRepository employeeRepository;
+    private final PasswordEncoder passwordEncoder;
+
 
     // ------------------------- MANAGER CRUD -------------------------
 
@@ -35,8 +39,26 @@ public class ManagerServiceImpl implements ManagerService {
      */
     @Override
     public Manager addManager(Manager manager) {
-        return managerRepository.save(manager);
+        // Encode password
+        if (manager.getPassword() != null) {
+            manager.setPassword(passwordEncoder.encode(manager.getPassword()));
+        }
+
+        // Save the manager first
+        Manager saved = managerRepository.save(manager);
+
+        // Assign this manager to all employees in the same department without a manager
+        if (saved.getDepartment() != null) {
+            List<Employee> employees = employeeRepository.findByDepartmentAndManagerIsNull(saved.getDepartment());
+            for (Employee e : employees) {
+                e.setManager(saved);
+            }
+            employeeRepository.saveAll(employees);
+        }
+
+        return saved;
     }
+
 
     /**
      * Get a manager by ID.
@@ -107,7 +129,7 @@ public class ManagerServiceImpl implements ManagerService {
         if (managerDetails.getFirstName() != null) existingManager.setFirstName(managerDetails.getFirstName());
         if (managerDetails.getLastName() != null) existingManager.setLastName(managerDetails.getLastName());
         if (managerDetails.getEmail() != null) existingManager.setEmail(managerDetails.getEmail());
-        if (managerDetails.getPassword() != null) existingManager.setPassword(managerDetails.getPassword());
+        if (managerDetails.getPassword() != null) existingManager.setPassword(passwordEncoder.encode(managerDetails.getPassword()));
         if (managerDetails.getPhoneNumber() != null) existingManager.setPhoneNumber(managerDetails.getPhoneNumber());
         if (managerDetails.getRole() != null) existingManager.setRole(managerDetails.getRole());
         if (managerDetails.getDepartment() != null) existingManager.setDepartment(managerDetails.getDepartment());
@@ -121,6 +143,7 @@ public class ManagerServiceImpl implements ManagerService {
 
         return managerRepository.save(existingManager);
     }
+
 
     /**
      * Delete a manager by ID.
@@ -165,7 +188,7 @@ public class ManagerServiceImpl implements ManagerService {
      * Handle employee update event.
      */
     private void handleEmployeeUpdated(Employee employee) {
-        // Currently no logic; implement if needed
+
     }
 
     /**

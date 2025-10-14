@@ -194,7 +194,6 @@ public class DepartmentImpl implements DepartmentService {
     }
 
     private void handleEmployeeUpdated(Employee employee) {
-        // Placeholder for future syncing logic
     }
 
     private void handleEmployeeDeleted(Employee employee) {

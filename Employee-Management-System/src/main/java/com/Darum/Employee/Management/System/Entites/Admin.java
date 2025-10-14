@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "admins")
+@PrimaryKeyJoinColumn(name = "userId")
 @Getter
 @Setter
 @NoArgsConstructor

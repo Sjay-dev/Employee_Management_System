@@ -1,5 +1,6 @@
 package com.Darum.Employee.Management.System.Repository;
 
+import com.Darum.Employee.Management.System.Entites.Department;
 import com.Darum.Employee.Management.System.Entites.Employee;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -22,6 +23,9 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
     public List<Employee> findByDepartment_DepartmentId(Long departmentId);
 
     public List<Employee> findByManager_UserId(Long managerId);
+
+    List<Employee> findByDepartmentAndManagerIsNull(Department department);
+
 
 
 

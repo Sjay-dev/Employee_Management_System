@@ -17,12 +17,13 @@ import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "managers")
+@PrimaryKeyJoinColumn(name = "userId")
 @Getter
 @Setter
 @NoArgsConstructor
 public class Manager extends User {
 
-    {this.setRole(Role.MANAGER);}
+    { this.setRole(Role.MANAGER); }
 
     @Column(nullable = false)
     private String firstName;
@@ -42,11 +43,8 @@ public class Manager extends User {
     private LocalDate dateOfBirth;
 
     private LocalDate employmentDate;
-
     private String employmentType;
-
     private String salary;
-
     private String address;
 
     @Column(nullable = false)
@@ -55,31 +53,35 @@ public class Manager extends User {
     @UpdateTimestamp
     private LocalDateTime updatedAt;
 
-    // Employees managed by this manager
-    @OneToMany(mappedBy = "manager", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonIgnore
-    private List<Employee> employees = new ArrayList<>();
-
-    // Department relationship
+    // Many managers can belong to one department
     @ManyToOne
     @JoinColumn(name = "departmentId")
     @JsonIgnore
     private Department department;
 
-    // Expose only department name in JSON
+    // Expose department name
     @JsonProperty("departmentName")
     public String getDepartmentName() {
         return department != null ? department.getName() : null;
     }
 
-    // Expose only employee names in JSON
+    // Expose employees in the department
+    @Transient
+    @JsonProperty("employees")
+    public List<Employee> getEmployeesInDepartment() {
+        return department != null ? department.getEmployees() : List.of();
+    }
+
     @JsonProperty("employeeNames")
     public List<String> getEmployeeNames() {
-        return employees.stream()
+        return department != null
+                ? department.getEmployees().stream()
                 .map(emp -> emp.getFirstName() + " " + emp.getLastName())
-                .collect(Collectors.toList());
+                .collect(Collectors.toList())
+                : List.of();
     }
 }
+
 
 
 

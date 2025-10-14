@@ -17,6 +17,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "employees")
+@PrimaryKeyJoinColumn(name = "userId")
 @Getter
 @Setter
 @NoArgsConstructor

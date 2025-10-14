@@ -1,6 +1,7 @@
 package com.Darum.Employee.Management.System.Service.Impl;
 
 import com.Darum.Employee.Management.System.Entites.Employee;
+import com.Darum.Employee.Management.System.Entites.Manager;
 import com.Darum.Employee.Management.System.Event.Enum.Event;
 import com.Darum.Employee.Management.System.Event.KafkaEvent;
 import com.Darum.Employee.Management.System.Repository.DepartmentRepository;
@@ -11,6 +12,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -24,6 +26,8 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     private final EmployeeRepository employeeRepository;
     private final KafkaTemplate<String, Object> kafka;
+    private final PasswordEncoder passwordEncoder;
+
     public static final String TOPIC = "Employee.events";
 
     // ------------------------- EMPLOYEE CRUD -------------------------
@@ -34,16 +38,29 @@ public class EmployeeServiceImpl implements EmployeeService {
      */
     @Override
     public Employee addEmployee(Employee employee) {
+        // Encode password before saving
+        if (employee.getPassword() != null) {employee.setPassword(passwordEncoder.encode(employee.getPassword()));}
+
+        // If employee has a department but no manager, assign manager in that department
+        if (employee.getDepartment() != null && employee.getManager() == null) {
+            List<Manager> managers = employee.getDepartment().getManagers();
+            if (!managers.isEmpty()) {
+                employee.setManager(managers.get(0));
+            }
+        }
+
         Employee saved = employeeRepository.save(employee);
 
-//        try {
-//            kafka.send(TOPIC, new KafkaEvent<>(Event.CREATE, saved));
-//        } catch (Exception e) {
-//            System.err.println("Failed to send Kafka event for employee: " + e.getMessage());
-//        }
+        // Send Kafka event
+        try {
+            kafka.send(TOPIC, new KafkaEvent<>(Event.CREATE, saved));
+        } catch (Exception e) {
+            System.err.println("⚠️ Failed to send Kafka event for employee: " + e.getMessage());
+        }
 
         return saved;
     }
+
 
     /**
      * Get an employee by ID.
@@ -116,6 +133,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         if (employeeDetails.getFirstName() != null) existingEmployee.setFirstName(employeeDetails.getFirstName());
         if (employeeDetails.getLastName() != null) existingEmployee.setLastName(employeeDetails.getLastName());
         if (employeeDetails.getEmail() != null) existingEmployee.setEmail(employeeDetails.getEmail());
+        if (employeeDetails.getPassword() != null) {existingEmployee.setPassword(passwordEncoder.encode(employeeDetails.getPassword()));}
         if (employeeDetails.getPhoneNumber() != null) existingEmployee.setPhoneNumber(employeeDetails.getPhoneNumber());
         if (employeeDetails.getDepartment() != null) existingEmployee.setDepartment(employeeDetails.getDepartment());
         if (employeeDetails.getPosition() != null) existingEmployee.setPosition(employeeDetails.getPosition());
@@ -125,16 +143,25 @@ public class EmployeeServiceImpl implements EmployeeService {
         if (employeeDetails.getAddress() != null) existingEmployee.setAddress(employeeDetails.getAddress());
         if (employeeDetails.getRole() != null) existingEmployee.setRole(employeeDetails.getRole());
         if (employeeDetails.getGender() != null) existingEmployee.setGender(employeeDetails.getGender());
-        if (employeeDetails.getPassword() != null) existingEmployee.setPassword(employeeDetails.getPassword());
 
+        // Reassign manager if department changes and has managers
+        if (employeeDetails.getDepartment() != null) {
+            List<Manager> managers = employeeDetails.getDepartment().getManagers();
+            if (!managers.isEmpty()) {
+                existingEmployee.setManager(managers.get(0));
+            }
+        }
+
+        // Send Kafka event
         try {
             kafka.send(TOPIC, new KafkaEvent<>(Event.UPDATE, existingEmployee));
         } catch (Exception e) {
-            System.err.println("Failed to send Kafka event for employee: " + e.getMessage());
+            System.err.println(" Failed to send Kafka event for employee update: " + e.getMessage());
         }
 
         return employeeRepository.save(existingEmployee);
     }
+
 
     /**
      * Delete an employee by ID.
@@ -143,8 +170,10 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     public void deleteEmployee(Long employeeId) {
         Employee employee = getEmployeeById(employeeId);
+
         employeeRepository.delete(employee);
 
+        // Send Kafka event
         try {
             kafka.send(TOPIC, new KafkaEvent<>(Event.DELETE, employee));
         } catch (Exception e) {

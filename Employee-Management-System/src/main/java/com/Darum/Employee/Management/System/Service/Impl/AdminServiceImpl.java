@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -25,7 +26,7 @@ import java.util.List;
 public class AdminServiceImpl implements AdminService {
 
     private final AdminRepository adminRepository;
-    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     // ------------------------- ADMIN CRUD METHODS -------------------------
 
@@ -34,7 +35,10 @@ public class AdminServiceImpl implements AdminService {
      */
     @Override
     public Admin addAdmin(Admin admin) {
-        return adminRepository.save(admin);
+
+        admin.setPassword(passwordEncoder.encode(admin.getPassword()));
+
+            return adminRepository.save(admin);
     }
 
     /**
@@ -93,11 +97,14 @@ public class AdminServiceImpl implements AdminService {
         if (adminDetails.getFirstName() != null) existingAdmin.setFirstName(adminDetails.getFirstName());
         if (adminDetails.getLastName() != null) existingAdmin.setLastName(adminDetails.getLastName());
         if (adminDetails.getEmail() != null) existingAdmin.setEmail(adminDetails.getEmail());
-        if (adminDetails.getPassword() != null) existingAdmin.setPassword(adminDetails.getPassword());
+        if (adminDetails.getPassword() != null) {
+            existingAdmin.setPassword(passwordEncoder.encode(adminDetails.getPassword()));
+        }
         if (adminDetails.getRole() != null) existingAdmin.setRole(adminDetails.getRole());
 
         return adminRepository.save(existingAdmin);
     }
+
 
     /**
      * Delete an admin by ID.

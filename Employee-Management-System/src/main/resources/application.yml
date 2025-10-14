@@ -1,70 +1,70 @@
 spring:
   application:
-    name: Employee Management System
+    name: Employee Management System # Name of the Spring Boot application
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/Employee Management System
-    driver-class-name: org.postgresql.Driver
-    username: postgres
-    password: EarthDb24
+    url: # Add your Database Connection URL, e.g., jdbc:postgresql://localhost:5432/EmployeeManagementSystem
+    driver-class-name: # Add your Database driver class, e.g., org.postgresql.Driver
+    username: # Add your Database username
+    password: # Add your Database password
 
   jpa:
     hibernate:
-      ddl-auto: update
-    show-sql: true
+      ddl-auto: update # Automatically update schema from entity definitions (good for dev)
+    show-sql: true # Show SQL queries in logs
     properties:
       hibernate:
-        format_sql: true
+        format_sql: true # Format SQL queries in logs
 
-  # Cloud Config (set to false if using local configs)
+  # Cloud Config (optional)
   cloud:
     config:
-      enabled: false
-      uri: http://localhost:8888     # enable later when Config Server is active
-      fail-fast: true
+      enabled: false # Set to true if using Spring Cloud Config Server
+      uri: http://localhost:8888 # URL of Config Server
+      fail-fast: true # Fail application startup if config server is unreachable
 
   kafka:
-    bootstrap-servers: localhost:9092
+    bootstrap-servers: localhost:9092 # Kafka broker address
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
     consumer:
-      group-id: employee-service
+      group-id: employee-service # Kafka consumer group
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       properties:
         spring:
           json:
             trusted:
-              packages: "*"
+              packages: "*" # Trust all packages for JSON deserialization
 
 server:
-  port: 8080
+  port: 8080 # Port for the Spring Boot application
 
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:8761/eureka/
-    register-with-eureka: false
-    fetch-registry: false
+      defaultZone: http://localhost:8761/eureka/ # Eureka server URL
+    register-with-eureka: false # Do not register this service with Eureka
+    fetch-registry: false # Do not fetch registry (if using local dev)
   instance:
     prefer-ip-address: false
     lease-renewal-interval-in-seconds: 10
     lease-expiration-duration-in-seconds: 30
 
 jwt:
-  secret: mySecretKey
-  expiration: 1800000   # 30 minutes
+  secret: mySecretKey # Secret key for signing JWT tokens
+  expiration: 1800000 # Token expiration in milliseconds (30 minutes)
 
 logging:
   level:
     root: INFO
     org.springframework.web: INFO
-    org.hibernate.SQL: DEBUG
+    org.hibernate.SQL: DEBUG # Log SQL statements
     org.apache.kafka: INFO
 
 management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics
+        include: health,info,metrics # Expose these Actuator endpoints
