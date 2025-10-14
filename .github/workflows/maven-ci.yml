@@ -2,13 +2,18 @@ name: Maven CI/CD
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
+
+    env:
+      POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+      POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+      POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
 
     services:
       postgres:
@@ -16,13 +21,13 @@ jobs:
         ports:
           - 5432:5432
         env:
-          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
-          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+          POSTGRES_USER: ${{ env.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
+          POSTGRES_DB: ${{ env.POSTGRES_DB }}
         options: >-
-          --health-cmd="pg_isready -U ${{ secrets.POSTGRES_USER }}"
-          --health-interval=10s
-          --health-timeout=5s
+          --health-cmd="pg_isready -U $POSTGRES_USER" 
+          --health-interval=10s 
+          --health-timeout=5s 
           --health-retries=5
 
       zookeeper:
@@ -38,16 +43,9 @@ jobs:
           KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
           KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
           KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
-        options: >-
-          --health-cmd="nc -z localhost 9092"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
-        depends_on:
-          - zookeeper
 
     steps:
-      - name: Checkout Repository
+      - name: Checkout repo
         uses: actions/checkout@v4
 
       - name: Set up JDK 17
@@ -55,16 +53,17 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
-          cache: 'maven'
 
-      - name: Build & Test with Maven
-        run: mvn clean verify -B
+      - name: Cache Maven packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-maven
+
+      - name: Build and Test
+        run: mvn clean install -B
         env:
-          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/${{ secrets.POSTGRES_DB }}
-          SPRING_DATASOURCE_USERNAME: ${{ secrets.POSTGRES_USER }}
-          SPRING_DATASOURCE_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-          SPRING_KAFKA_BOOTSTRAP_SERVERS: localhost:9092
-          JWT_SECRET: ${{ secrets.JWT_SECRET }}
-
-      - name: Package Application
-        run: mvn package -DskipTests
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/${{ env.POSTGRES_DB }}
+          SPRING_DATASOURCE_USERNAME: ${{ env.POSTGRES_USER }}
+          SPRING_DATASOURCE_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
