@@ -113,8 +113,18 @@ public class DepartmentImpl implements DepartmentService {
                 ));
 
         department.addManager(manager);
-        return departmentRepository.save(department);
+        Department saved = departmentRepository.save(department);
+
+        // 🔥 Reassign manager to all employees in this department that don’t have one
+        List<Employee> employeesWithoutManager = employeeRepository.findByDepartmentAndManagerIsNull(department);
+        for (Employee e : employeesWithoutManager) {
+            e.setManager(manager);
+        }
+        employeeRepository.saveAll(employeesWithoutManager);
+
+        return saved;
     }
+
 
     /**
      * Remove a manager from a department.
@@ -137,18 +147,25 @@ public class DepartmentImpl implements DepartmentService {
      * Add an existing employee to a department.
      */
     @Override
+    @Transactional
     public Department addExistingEmployeeToDepartment(Long departmentId, Long employeeId) {
-        Department department = getDepartmentById(departmentId);
-        Employee employee = employeeRepository.findById(employeeId)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND, "Employee not found with ID: " + employeeId
-                ));
+        Department department = departmentRepository.findById(departmentId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Department not found"));
 
-        department.getEmployees().add(employee);
+        Employee employee = employeeRepository.findById(employeeId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Employee not found"));
+
+        department.addEmployee(employee);
+
+        if (!department.getManagers().isEmpty() && employee.getManager() == null) {
+            employee.setManager(department.getManagers().get(0));
+        }
+
         employee.setDepartment(department);
         employeeRepository.save(employee);
         return departmentRepository.save(department);
     }
+
 
     /**
      * Remove an employee from a department.
@@ -161,7 +178,7 @@ public class DepartmentImpl implements DepartmentService {
                         HttpStatus.NOT_FOUND, "Employee not found with ID: " + employeeId
                 ));
 
-        department.getEmployees().remove(employee);
+        department.removeEmployee(employee);
         employee.setDepartment(null);
         employeeRepository.save(employee);
         return departmentRepository.save(department);

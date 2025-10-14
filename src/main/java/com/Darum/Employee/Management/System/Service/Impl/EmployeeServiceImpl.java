@@ -1,5 +1,6 @@
 package com.Darum.Employee.Management.System.Service.Impl;
 
+import com.Darum.Employee.Management.System.Entites.Department;
 import com.Darum.Employee.Management.System.Entites.Employee;
 import com.Darum.Employee.Management.System.Entites.Manager;
 import com.Darum.Employee.Management.System.Event.Enum.Event;
@@ -25,6 +26,7 @@ import java.util.List;
 public class EmployeeServiceImpl implements EmployeeService {
 
     private final EmployeeRepository employeeRepository;
+    private final DepartmentRepository departmentRepository;
     private final KafkaTemplate<String, Object> kafka;
     private final PasswordEncoder passwordEncoder;
 
@@ -38,15 +40,19 @@ public class EmployeeServiceImpl implements EmployeeService {
      */
     @Override
     public Employee addEmployee(Employee employee) {
-        // Encode password before saving
         if (employee.getPassword() != null) {employee.setPassword(passwordEncoder.encode(employee.getPassword()));}
 
-        // If employee has a department but no manager, assign manager in that department
-        if (employee.getDepartment() != null && employee.getManager() == null) {
-            List<Manager> managers = employee.getDepartment().getManagers();
-            if (!managers.isEmpty()) {
-                employee.setManager(managers.get(0));
+        if (employee.getDepartment() != null) {
+            Department dept = departmentRepository.findById(employee.getDepartment().getDepartmentId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Department not found"));
+
+            // Assign manager automatically if department already has one
+            List<Manager> deptManagers = dept.getManagers();
+            if (!deptManagers.isEmpty() && employee.getManager() == null) {
+                employee.setManager(deptManagers.get(0)); // You can extend this logic if multiple managers exist
             }
+
+            employee.setDepartment(dept);
         }
 
         Employee saved = employeeRepository.save(employee);
