@@ -44,7 +44,7 @@ public class EmployeeControllerTest {
         when(jwtToken.getRoleFromToken("token")).thenReturn("EMPLOYEE");
         when(employeeService.getEmployeeByEmail("emp@test.com")).thenReturn(emp);
 
-        mockMvc.perform(get("/api/employees/me")
+        mockMvc.perform(get("/api/employee/me")
                         .header("Authorization", "Bearer token"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.email").value("emp@test.com"));
@@ -55,7 +55,7 @@ public class EmployeeControllerTest {
     void testGetMyProfileInvalidToken() throws Exception {
         when(jwtToken.validateToken("bad-token")).thenReturn(false);
 
-        mockMvc.perform(get("/api/employees/me")
+        mockMvc.perform(get("/api/employee/me")
                         .header("Authorization", "Bearer bad-token"))
                 .andExpect(status().isUnauthorized());
     }
@@ -69,7 +69,7 @@ public class EmployeeControllerTest {
         when(jwtToken.getEmailFromToken("token")).thenReturn("emp@test.com");
         when(jwtToken.getRoleFromToken("token")).thenReturn("MANAGER"); // Wrong role
 
-        mockMvc.perform(get("/api/employees/me")
+        mockMvc.perform(get("/api/employee/me")
                         .header("Authorization", "Bearer token"))
                 .andExpect(status().isForbidden());
     }
@@ -83,7 +83,7 @@ public class EmployeeControllerTest {
         when(employeeService.getEmployeeByEmail("unknown@test.com"))
                 .thenThrow(new ResponseStatusException(HttpStatus.NOT_FOUND));
 
-        mockMvc.perform(get("/api/employees/me")
+        mockMvc.perform(get("/api/employee/me")
                         .header("Authorization", "Bearer token"))
                 .andExpect(status().isNotFound());
     }
