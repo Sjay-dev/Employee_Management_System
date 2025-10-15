@@ -221,8 +221,3 @@ mvn test
   - PostgreSQL: 5432
 ```
 
----
-
-If you want, I can also **add a table of example API endpoints with their methods and required roles**, which makes it very easy for developers to quickly reference the API.  
-
-Do you want me to do that?
