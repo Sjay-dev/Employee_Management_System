@@ -118,7 +118,8 @@ POST: `http://localhost:8080/api/admin/managers`
   "position": "Team Lead",
   "employmentDate": "2023-01-10",
   "employmentType": "Full-time",
-  "salary": "120000"
+  "salary": "950000",
+  "address": Lagos
 }
 ```
 
@@ -135,7 +136,8 @@ POST: `http://localhost:8080/api/admin/employees`
   "gender": "MALE",
   "position": "Software Developer",
   "employmentType": "Full-time",
-  "salary": "80000"
+  "salary": "450000",
+  "address": Lagos
 }
 ```
 
@@ -153,7 +155,7 @@ POST: `http://localhost:8080/api/admin/departments/{departmentID}/employees/{emp
 - Admin: `GET /api/admin/managers/{managerID}`
 
 ###  get Employees in Department
-- Admin: `GET /api/manager/department/employees`
+- Manager: `GET /api/manager/department/employees`
 
 
 ### Employee Profile
