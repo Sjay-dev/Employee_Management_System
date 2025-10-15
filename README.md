@@ -119,7 +119,7 @@ POST: `http://localhost:8080/api/admin/managers`
   "employmentDate": "2023-01-10",
   "employmentType": "Full-time",
   "salary": "950000",
-  "address": Lagos
+  "address": "Lagos"
 }
 ```
 
@@ -137,7 +137,7 @@ POST: `http://localhost:8080/api/admin/employees`
   "position": "Software Developer",
   "employmentType": "Full-time",
   "salary": "450000",
-  "address": Lagos
+  "address": "Lagos"
 }
 ```
 
